@@ -1,0 +1,95 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "RDA Collections API",
+        "description": "API Strawman for RDA Research Data Collections WG",
+        "version": "1.0.0"
+    },
+    "host": "api.example.org",
+    "schemes": [
+        "https"
+    ],
+    "basePath": "/v1",
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/collection": {
+            "get": {
+                "summary": "Collections",
+                "description": "The Collections endpoint returns information about the collections available at this service. \nThe response includes the PID for the collection, the display name and other metadata.\n",
+                "parameters": [
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Filter criteria",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Collections"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "An array of collections",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Collection"
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Collection": {
+            "type": "object",
+            "properties": {
+                "pid": {
+                    "type": "string",
+                    "description": "Persistent Identifier for the collection."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the collection."
+                },
+                "display_name": {
+                    "type": "string",
+                    "description": "Display name of the collection."
+                },
+                "model_type": {
+                    "type": "string",
+                    "description": "Model Type"
+                },
+                "access_type": {
+                    "type": "string",
+                    "description": "Access Type"
+                }
+            }
+        },
+        "Error": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "fields": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
