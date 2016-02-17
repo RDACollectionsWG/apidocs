@@ -112,6 +112,13 @@
                 "tags": [
                     "Collections"
                 ],
+                "security": [
+                    {
+                        "oauth": [
+                            "collections:write"
+                        ]
+                    }
+                ],
                 "responses": {
                     "201": {
                         "description": "Successful creation",
@@ -183,6 +190,13 @@
                 "tags": [
                     "Collections"
                 ],
+                "security": [
+                    {
+                        "oauth": [
+                            "collections:write"
+                        ]
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful update",
@@ -218,6 +232,13 @@
                 ],
                 "tags": [
                     "Collections"
+                ],
+                "security": [
+                    {
+                        "oauth": [
+                            "collections:write"
+                        ]
+                    }
                 ],
                 "responses": {
                     "200": {
@@ -310,6 +331,13 @@
                         }
                     }
                 ],
+                "security": [
+                    {
+                        "oauth": [
+                            "items:write"
+                        ]
+                    }
+                ],
                 "tags": [
                     "Items"
                 ],
@@ -386,6 +414,13 @@
                 "tags": [
                     "Items"
                 ],
+                "security": [
+                    {
+                        "oauth": [
+                            "items:write"
+                        ]
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful update",
@@ -428,6 +463,13 @@
                 ],
                 "tags": [
                     "Collections"
+                ],
+                "security": [
+                    {
+                        "oauth": [
+                            "items:write"
+                        ]
+                    }
                 ],
                 "responses": {
                     "200": {
