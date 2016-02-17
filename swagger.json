@@ -13,18 +13,65 @@
     "produces": [
         "application/json"
     ],
+    "securityDefinitions": {
+        "oauth": {
+            "type": "oauth2",
+            "authorizationUrl": "http://example.org/oauth/authorize",
+            "flow": "accessCode",
+            "tokenUrl": "http://example.org/oauth/token",
+            "scopes": {
+                "collections:write": "Can write collections",
+                "collections:read": "Can read collections",
+                "items:write": "Can write collection items",
+                "items:read": "Can read collection items",
+                "modeltypes:write": "Can write modeltypes",
+                "modeltypes: read": "Can read modeltypes",
+                "accesstypes:write": "Can read write accesstypes",
+                "accesstypes:read": "Can read accesstypes",
+                "default": "public"
+            }
+        }
+    },
     "paths": {
-        "/collection": {
+        "/collections": {
             "get": {
-                "summary": "Collections",
+                "summary": "Get list of all collections",
                 "description": "The Collections endpoint returns information about the collections available at this service. \nThe response includes the PID for the collection, the display name and other metadata.\n",
                 "parameters": [
                     {
-                        "name": "filter",
+                        "name": "filter_by_modeltype",
                         "in": "query",
-                        "description": "Filter criteria",
+                        "description": "Filter by type of collection model.",
                         "required": false,
                         "type": "string"
+                    },
+                    {
+                        "name": "filter_by_datatype",
+                        "in": "query",
+                        "description": "Filter collections by data type of contained collection item.",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "filter_by_pidtype",
+                        "in": "query",
+                        "description": "Filter collections by type of collection persistent identifier type.",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "filter_by_accesstype",
+                        "in": "query",
+                        "description": "Filter collections by type of collection access type.",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sort criteria",
+                        "type": "string",
+                        "required": false
                     }
                 ],
                 "tags": [
@@ -47,12 +94,506 @@
                         }
                     }
                 }
+            },
+            "post": {
+                "summary": "Create a new collection.",
+                "description": "Creates a new collection in the collection store.",
+                "parameters": [
+                    {
+                        "name": "content",
+                        "in": "body",
+                        "description": "collection metadata",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Collection"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Collections"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successful creation",
+                        "schema": {
+                            "$ref": "#/definitions/Collection"
+                        }
+                    },
+                    "405": {
+                        "description": "Invalid Input",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{id}": {
+            "get": {
+                "summary": "Get metadata about a specific collection",
+                "description": "Gets a specific collection by its pid",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Persistent identifier for the collection",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Collections"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The requested collection",
+                        "schema": {
+                            "$ref": "#/definitions/Collection"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "summary": "Update collection metadata",
+                "description": "Updates collection metadata",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Persistent identifier for the collection",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "content",
+                        "in": "body",
+                        "description": "collection metadata",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Collection"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Collections"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful update",
+                        "schema": {
+                            "$ref": "#/definitions/Collection"
+                        }
+                    },
+                    "405": {
+                        "description": "Invalid Input",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete a collection",
+                "description": "Deletes a collection",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Persistent identifier for the collection",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Collections"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful deletion",
+                        "schema": {
+                            "$ref": "#/definitions/Collection"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{id}/items": {
+            "get": {
+                "summary": "Get the items in a collection",
+                "description": "Gets items from a collection",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Persistent identifier for the collection",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "filter_by_datatype",
+                        "in": "query",
+                        "description": "Filter by datatype of collection item",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "filter_by_pidtype",
+                        "in": "query",
+                        "description": "Filter by pid type of the collection item",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "filter_by_accesstype",
+                        "in": "query",
+                        "description": "Filter by access type of collection item",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Items"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "An array of collection items",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Item"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Add a new item to this collection",
+                "description": "Adds a new item to a collection",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Persistent identifier for the collection",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "content",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Item"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Items"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successful creation",
+                        "schema": {
+                            "$ref": "#/definitions/Item"
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{id}/items/{tid}": {
+            "get": {
+                "summary": "Get a specific item in a collection",
+                "description": "Get a specific item in a collection",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Persistent identifier for the collection",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "tid",
+                        "in": "path",
+                        "type": "string",
+                        "description": "Identifier for the collection item",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Items"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The requested item",
+                        "schema": {
+                            "$ref": "#/definitions/Item"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "summary": "Update an item in a collection",
+                "description": "Updates an item in a collection",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Persistent identifier for the collection",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "tid",
+                        "in": "path",
+                        "type": "string",
+                        "description": "Identifier for the collection item",
+                        "required": true
+                    },
+                    {
+                        "name": "content",
+                        "in": "body",
+                        "description": "collection metadata",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Collection"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Items"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful update",
+                        "schema": {
+                            "$ref": "#/definitions/Item"
+                        }
+                    },
+                    "405": {
+                        "description": "Invalid Input",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete a collection item",
+                "description": "Deletes a collection item",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Persistent identifier for the collection",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "tid",
+                        "in": "path",
+                        "type": "string",
+                        "description": "Identifier for the collection item",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Collections"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful deletion",
+                        "schema": {
+                            "$ref": "#/definitions/Collection"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/modeltypes": {
+            "get": {
+                "summary": "Get a list of collection model types",
+                "description": "Get a list of collection model types",
+                "tags": [
+                    "ModelType"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The list of model types",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ModelType"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Create a new collection model type",
+                "description": "Create a new collection model type",
+                "tags": [
+                    "ModelType"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successful creation",
+                        "schema": {
+                            "$ref": "#/definitions/ModelType"
+                        }
+                    }
+                }
+            }
+        },
+        "/accesstypes": {
+            "get": {
+                "summary": "Get a list of collection access types",
+                "description": "Get a list of collection access types",
+                "tags": [
+                    "AccessType"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The list of access types",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/AccessType"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Create a new collection access typeu",
+                "description": "Create a new collection access type",
+                "tags": [
+                    "AccessType"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successful creation",
+                        "schema": {
+                            "$ref": "#/definitions/AccessType"
+                        }
+                    }
+                }
             }
         }
     },
     "definitions": {
-        "Collection": {
+        "ModelType": {
+            "description": "A Collection Model",
             "type": "object",
+            "required": [
+                "pid",
+                "name"
+            ],
+            "properties": {
+                "pid": {
+                    "type": "string",
+                    "description": "Persistent Identifier for the model type."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Name of the model type"
+                }
+            }
+        },
+        "AccessType": {
+            "description": "Access Details",
+            "type": "object",
+            "required": [
+                "pid",
+                "name"
+            ],
+            "properties": {
+                "pid": {
+                    "type": "string",
+                    "description": "Persistent Identifier for the access type."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Name of the access type"
+                }
+            }
+        },
+        "Item": {
+            "description": "A data item in a collection",
+            "type": "object",
+            "required": [
+                "datatype",
+                "tid"
+            ],
+            "properties": {
+                "pid": {
+                    "type": "string",
+                    "description": "Persistent Identifier for the item"
+                },
+                "tid": {
+                    "type": "string",
+                    "description": "Temporary identifier for the item, may be the same as the pid"
+                },
+                "datatype": {
+                    "type": "string",
+                    "description": "URI of the data type of this item"
+                },
+                "access_type": {
+                    "$ref": "#/definitions/AccessType"
+                }
+            }
+        },
+        "Collection": {
+            "description": "A collection",
+            "type": "object",
+            "required": [
+                "pid",
+                "description",
+                "display_name",
+                "model_type",
+                "access_type"
+            ],
             "properties": {
                 "pid": {
                     "type": "string",
@@ -67,12 +608,10 @@
                     "description": "Display name of the collection."
                 },
                 "model_type": {
-                    "type": "string",
-                    "description": "Model Type"
+                    "$ref": "#/definitions/ModelType"
                 },
                 "access_type": {
-                    "type": "string",
-                    "description": "Access Type"
+                    "$ref": "#/definitions/AccessType"
                 }
             }
         },
