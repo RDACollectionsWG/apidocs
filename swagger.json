@@ -262,6 +262,223 @@
                 }
             }
         },
+        "/collections/{id}/contains": {
+            "post": {
+                "summary": "Check to see if an itemis contained by the collection",
+                "description": "Check to see if an item is contained by the collection",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Persistent identifier for the collection",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "item",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Item"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Collections"
+                ],
+                "security": [
+                    {
+                        "oauth": [
+                            "collections:read"
+                        ]
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Found item",
+                        "schema": {
+                            "$ref": "#/definitions/Item"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{id}/matches": {
+            "post": {
+                "summary": "Find items matching the supplied item",
+                "description": "Find items matching the supplied item",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Persistent identifier for the collection",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "item",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Item"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Collections"
+                ],
+                "security": [
+                    {
+                        "oauth": [
+                            "collections:read"
+                        ]
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Union of items in the two collections",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Item"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{id}/intersects": {
+            "get": {
+                "summary": "Retrieve the items at the intersection of two collections",
+                "description": "Retrieve the items at the intersection of two collections",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Persistent identifier for the collection",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "otherId",
+                        "in": "query",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Collections"
+                ],
+                "security": [
+                    {
+                        "oauth": [
+                            "collections:read"
+                        ]
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Items at the intersection",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Item"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{id}/union": {
+            "get": {
+                "summary": "Retrieve the union of two collections",
+                "description": "Retrieve the union of two collections",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Persistent identifier for the collection",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "otherId",
+                        "in": "query",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Collections"
+                ],
+                "security": [
+                    {
+                        "oauth": [
+                            "collections:read"
+                        ]
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Union of items in the two collections",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Item"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
         "/collections/{id}/items": {
             "get": {
                 "summary": "Get the items in a collection",
@@ -528,6 +745,32 @@
                 }
             }
         },
+        "/modeltypes/{type}": {
+            "get": {
+                "summary": "Get the properties of a specific type",
+                "description": "Get the properties of a specific type",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "mode type identifier",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "ModelType"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The model type properties",
+                        "schema": {
+                            "$ref": "#/definitions/ModelType"
+                        }
+                    }
+                }
+            }
+        },
         "/accesstypes": {
             "get": {
                 "summary": "Get a list of collection access types",
@@ -556,6 +799,32 @@
                 "responses": {
                     "201": {
                         "description": "Successful creation",
+                        "schema": {
+                            "$ref": "#/definitions/AccessType"
+                        }
+                    }
+                }
+            }
+        },
+        "/accesstype/{type}": {
+            "get": {
+                "summary": "Get the properties of a specific access type",
+                "description": "Get the properties of a specific access type",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "Access type identifier",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "AccessType"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The access type properties",
                         "schema": {
                             "$ref": "#/definitions/AccessType"
                         }
