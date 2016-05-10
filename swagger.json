@@ -79,12 +79,9 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "An array of collections",
+                        "description": "A collections cursor",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/Collection"
-                            }
+                            "$ref": "#/definitions/CollectionCursor"
                         }
                     },
                     "default": {
@@ -262,59 +259,6 @@
                 }
             }
         },
-        "/collections/{id}/contains": {
-            "post": {
-                "summary": "Check to see if an itemis contained by the collection",
-                "description": "Check to see if an item is contained by the collection",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "Persistent identifier for the collection",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "item",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/Item"
-                        }
-                    }
-                ],
-                "tags": [
-                    "Collections"
-                ],
-                "security": [
-                    {
-                        "oauth": [
-                            "collections:read"
-                        ]
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Found item",
-                        "schema": {
-                            "$ref": "#/definitions/Item"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/Error"
-                        }
-                    },
-                    "default": {
-                        "description": "Unexpected error",
-                        "schema": {
-                            "$ref": "#/definitions/Error"
-                        }
-                    }
-                }
-            }
-        },
         "/collections/{id}/matches": {
             "post": {
                 "summary": "Find items matching the supplied item",
@@ -334,6 +278,12 @@
                         "schema": {
                             "$ref": "#/definitions/Item"
                         }
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "type": "string",
+                        "description": "cursor for iterating a prior response to this query"
                     }
                 ],
                 "tags": [
@@ -350,10 +300,7 @@
                     "200": {
                         "description": "Union of items in the two collections",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/Item"
-                            }
+                            "$ref": "#/definitions/ItemCursor"
                         }
                     },
                     "404": {
@@ -388,6 +335,12 @@
                         "in": "query",
                         "required": true,
                         "type": "string"
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "type": "string",
+                        "description": "cursor for iterating a prior response to this query"
                     }
                 ],
                 "tags": [
@@ -404,10 +357,7 @@
                     "200": {
                         "description": "Items at the intersection",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/Item"
-                            }
+                            "$ref": "#/definitions/ItemCursor"
                         }
                     },
                     "404": {
@@ -442,6 +392,12 @@
                         "in": "query",
                         "required": true,
                         "type": "string"
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "type": "string",
+                        "description": "cursor for iterating a prior response to this query"
                     }
                 ],
                 "tags": [
@@ -458,10 +414,7 @@
                     "200": {
                         "description": "Union of items in the two collections",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/Item"
-                            }
+                            "$ref": "#/definitions/ItemCursor"
                         }
                     },
                     "404": {
@@ -511,6 +464,12 @@
                         "description": "Filter by access type of collection item",
                         "required": false,
                         "type": "string"
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "description": "cursor for iterating a prior response to this query",
+                        "type": "string"
                     }
                 ],
                 "tags": [
@@ -520,10 +479,7 @@
                     "200": {
                         "description": "An array of collection items",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/Item"
-                            }
+                            "$ref": "#/definitions/ItemCursor"
                         }
                     }
                 }
@@ -886,6 +842,10 @@
                     "type": "string",
                     "description": "Temporary identifier for the item, may be the same as the pid"
                 },
+                "location": {
+                    "type": "string",
+                    "description": "Location at which the item data can be retrieved"
+                },
                 "datatype": {
                     "type": "string",
                     "description": "URI of the data type of this item"
@@ -923,6 +883,52 @@
                 },
                 "access_type": {
                     "$ref": "#/definitions/AccessType"
+                }
+            }
+        },
+        "CollectionCursor": {
+            "description": "A Cursor for iterating a response set of Collections",
+            "type": "object",
+            "required": [
+                "contents",
+                "next_cursor",
+                "prev_cursor"
+            ],
+            "properties": {
+                "contents": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Collection"
+                    }
+                },
+                "next_cursor": {
+                    "type": "string"
+                },
+                "prev_cursor": {
+                    "type": "string"
+                }
+            }
+        },
+        "ItemCursor": {
+            "description": "A Cursor for iterating a response set of Collection Items",
+            "type": "object",
+            "required": [
+                "contents",
+                "next_cursor",
+                "prev_cursor"
+            ],
+            "properties": {
+                "contents": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Item"
+                    }
+                },
+                "next_cursor": {
+                    "type": "string"
+                },
+                "prev_cursor": {
+                    "type": "string"
                 }
             }
         },
