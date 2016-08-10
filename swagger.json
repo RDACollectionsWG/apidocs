@@ -20,19 +20,29 @@
             "flow": "accessCode",
             "tokenUrl": "http://example.org/oauth/token",
             "scopes": {
-                "collections:write": "Can write collections",
-                "collections:read": "Can read collections",
-                "items:write": "Can write collection items",
-                "items:read": "Can read collection items",
-                "modeltypes:write": "Can write modeltypes",
-                "modeltypes: read": "Can read modeltypes",
-                "accesstypes:write": "Can read write accesstypes",
-                "accesstypes:read": "Can read accesstypes",
-                "default": "public"
+                "write": "Can write collections",
+                "read": "Can read collections",
+                "modify": "Can modify collections"
             }
         }
     },
     "paths": {
+        "/capabilities": {
+            "get": {
+                "summary": "Get the service-level capabilities",
+                "tags": [
+                    "Service"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Service Level Capabilities",
+                        "schema": {
+                            "$ref": "#/definitions/ServiceCapabilities"
+                        }
+                    }
+                }
+            }
+        },
         "/collections": {
             "get": {
                 "summary": "Get list of all collections",
@@ -48,14 +58,7 @@
                     {
                         "name": "filter_by_datatype",
                         "in": "query",
-                        "description": "Filter collections by data type of contained collection item.",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "filter_by_pidtype",
-                        "in": "query",
-                        "description": "Filter collections by type of collection persistent identifier type.",
+                        "description": "Filter collections by data type of contained collection member.",
                         "required": false,
                         "type": "string"
                     },
@@ -64,6 +67,12 @@
                         "in": "query",
                         "description": "Filter collections by type of collection access type.",
                         "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "filter_by_owner",
+                        "in": "query",
+                        "description": "Filter collections by owner of the collection",
                         "type": "string"
                     },
                     {
@@ -79,12 +88,9 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "An array of collections",
+                        "description": "A collections cursor",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/Collection"
-                            }
+                            "$ref": "#/definitions/CollectionCursor"
                         }
                     },
                     "default": {
@@ -115,7 +121,7 @@
                 "security": [
                     {
                         "oauth": [
-                            "collections:write"
+                            "write"
                         ]
                     }
                 ],
@@ -193,7 +199,7 @@
                 "security": [
                     {
                         "oauth": [
-                            "collections:write"
+                            "modify"
                         ]
                     }
                 ],
@@ -236,7 +242,7 @@
                 "security": [
                     {
                         "oauth": [
-                            "collections:write"
+                            "write"
                         ]
                     }
                 ],
@@ -262,10 +268,209 @@
                 }
             }
         },
-        "/collections/{id}/items": {
+        "/collections/{id}/capabilities": {
             "get": {
-                "summary": "Get the items in a collection",
-                "description": "Gets items from a collection",
+                "summary": "Get the capabilities of this collection",
+                "description": "Get the capabilities of this collection",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Persistent identifier for the collection",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Collections"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The capabilities",
+                        "schema": {
+                            "$ref": "#/definitions/CollectionCapabilities"
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{id}/matches": {
+            "post": {
+                "summary": "Find members matching the supplied member",
+                "description": "Find members matching the supplied member",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Persistent identifier for the collection",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "member",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Item"
+                        }
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "type": "string",
+                        "description": "cursor for iterating a prior response to this query"
+                    }
+                ],
+                "tags": [
+                    "Collections"
+                ],
+                "security": [
+                    {
+                        "oauth": [
+                            "read"
+                        ]
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Union of members in the two collections",
+                        "schema": {
+                            "$ref": "#/definitions/MemberCursor"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{id}/intersects": {
+            "get": {
+                "summary": "Retrieve the members at the intersection of two collections",
+                "description": "Retrieve the members at the intersection of two collections",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Persistent identifier for the collection",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "otherId",
+                        "in": "query",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "type": "string",
+                        "description": "cursor for iterating a prior response to this query"
+                    }
+                ],
+                "tags": [
+                    "Collections"
+                ],
+                "security": [
+                    {
+                        "oauth": [
+                            "read"
+                        ]
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Members at the intersection",
+                        "schema": {
+                            "$ref": "#/definitions/MemberCursor"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{id}/union": {
+            "get": {
+                "summary": "Retrieve the union of two collections",
+                "description": "Retrieve the union of two collections",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Persistent identifier for the collection",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "otherId",
+                        "in": "query",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "type": "string",
+                        "description": "cursor for iterating a prior response to this query"
+                    }
+                ],
+                "tags": [
+                    "Collections"
+                ],
+                "security": [
+                    {
+                        "oauth": [
+                            "read"
+                        ]
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Union of members in the two collections",
+                        "schema": {
+                            "$ref": "#/definitions/MemberCursor"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{id}/members": {
+            "get": {
+                "summary": "Get the members in a collection",
+                "description": "Gets members from a collection",
                 "parameters": [
                     {
                         "name": "id",
@@ -277,43 +482,60 @@
                     {
                         "name": "filter_by_datatype",
                         "in": "query",
-                        "description": "Filter by datatype of collection item",
+                        "description": "Filter by datatype of collection member",
                         "required": false,
                         "type": "string"
                     },
                     {
                         "name": "filter_by_pidtype",
                         "in": "query",
-                        "description": "Filter by pid type of the collection item",
+                        "description": "Filter by pid type of the collection member",
                         "required": false,
                         "type": "string"
                     },
                     {
                         "name": "filter_by_accesstype",
                         "in": "query",
-                        "description": "Filter by access type of collection item",
+                        "description": "Filter by access type of collection member",
                         "required": false,
                         "type": "string"
+                    },
+                    {
+                        "name": "filter_by_role",
+                        "in": "query",
+                        "description": "Filter by the role of a collection memeber",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "description": "cursor for iterating a prior response to this query",
+                        "type": "string"
+                    },
+                    {
+                        "name": "expandDepth",
+                        "in": "query",
+                        "description": "expand members which are collections to this depth. may not exceed maxDepth capability for the collection",
+                        "type": "integer",
+                        "required": false
                     }
                 ],
                 "tags": [
-                    "Items"
+                    "Members"
                 ],
                 "responses": {
                     "200": {
-                        "description": "An array of collection items",
+                        "description": "An array of collection members",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/Item"
-                            }
+                            "$ref": "#/definitions/MemberCursor"
                         }
                     }
                 }
             },
             "post": {
-                "summary": "Add a new item to this collection",
-                "description": "Adds a new item to a collection",
+                "summary": "Add a new member to this collection",
+                "description": "Adds a new member to a collection",
                 "parameters": [
                     {
                         "name": "id",
@@ -334,12 +556,12 @@
                 "security": [
                     {
                         "oauth": [
-                            "items:write"
+                            "write"
                         ]
                     }
                 ],
                 "tags": [
-                    "Items"
+                    "Members"
                 ],
                 "responses": {
                     "201": {
@@ -351,10 +573,10 @@
                 }
             }
         },
-        "/collections/{id}/items/{tid}": {
+        "/collections/{id}/members/{tid}": {
             "get": {
-                "summary": "Get a specific item in a collection",
-                "description": "Get a specific item in a collection",
+                "summary": "Get a specific member in a collection",
+                "description": "Get a specific member in a collection",
                 "parameters": [
                     {
                         "name": "id",
@@ -367,16 +589,16 @@
                         "name": "tid",
                         "in": "path",
                         "type": "string",
-                        "description": "Identifier for the collection item",
+                        "description": "Identifier for the collection member",
                         "required": true
                     }
                 ],
                 "tags": [
-                    "Items"
+                    "Members"
                 ],
                 "responses": {
                     "200": {
-                        "description": "The requested item",
+                        "description": "The requested member",
                         "schema": {
                             "$ref": "#/definitions/Item"
                         }
@@ -384,8 +606,8 @@
                 }
             },
             "put": {
-                "summary": "Update an item in a collection",
-                "description": "Updates an item in a collection",
+                "summary": "Update an member in a collection",
+                "description": "Updates an member in a collection",
                 "parameters": [
                     {
                         "name": "id",
@@ -398,7 +620,7 @@
                         "name": "tid",
                         "in": "path",
                         "type": "string",
-                        "description": "Identifier for the collection item",
+                        "description": "Identifier for the collection member",
                         "required": true
                     },
                     {
@@ -412,12 +634,12 @@
                     }
                 ],
                 "tags": [
-                    "Items"
+                    "Members"
                 ],
                 "security": [
                     {
                         "oauth": [
-                            "items:write"
+                            "modify"
                         ]
                     }
                 ],
@@ -443,8 +665,8 @@
                 }
             },
             "delete": {
-                "summary": "Delete a collection item",
-                "description": "Deletes a collection item",
+                "summary": "Delete a collection member",
+                "description": "Deletes a collection member",
                 "parameters": [
                     {
                         "name": "id",
@@ -457,7 +679,7 @@
                         "name": "tid",
                         "in": "path",
                         "type": "string",
-                        "description": "Identifier for the collection item",
+                        "description": "Identifier for the collection member",
                         "required": true
                     }
                 ],
@@ -467,7 +689,7 @@
                 "security": [
                     {
                         "oauth": [
-                            "items:write"
+                            "write"
                         ]
                     }
                 ],
@@ -492,112 +714,33 @@
                     }
                 }
             }
-        },
-        "/modeltypes": {
-            "get": {
-                "summary": "Get a list of collection model types",
-                "description": "Get a list of collection model types",
-                "tags": [
-                    "ModelType"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "The list of model types",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/ModelType"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "summary": "Create a new collection model type",
-                "description": "Create a new collection model type",
-                "tags": [
-                    "ModelType"
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Successful creation",
-                        "schema": {
-                            "$ref": "#/definitions/ModelType"
-                        }
-                    }
-                }
-            }
-        },
-        "/accesstypes": {
-            "get": {
-                "summary": "Get a list of collection access types",
-                "description": "Get a list of collection access types",
-                "tags": [
-                    "AccessType"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "The list of access types",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/AccessType"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "summary": "Create a new collection access typeu",
-                "description": "Create a new collection access type",
-                "tags": [
-                    "AccessType"
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Successful creation",
-                        "schema": {
-                            "$ref": "#/definitions/AccessType"
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
-        "ModelType": {
-            "description": "A Collection Model",
+        "CollectionCapabilities": {
+            "description": "Collection Capabilities",
             "type": "object",
-            "required": [
-                "pid",
-                "name"
-            ],
             "properties": {
-                "pid": {
-                    "type": "string",
-                    "description": "Persistent Identifier for the model type."
+                "isOrdered": {
+                    "type": "boolean",
+                    "description": "are the members in the collection ordered"
                 },
-                "name": {
-                    "type": "string",
-                    "description": "Name of the model type"
-                }
-            }
-        },
-        "AccessType": {
-            "description": "Access Details",
-            "type": "object",
-            "required": [
-                "pid",
-                "name"
-            ],
-            "properties": {
-                "pid": {
-                    "type": "string",
-                    "description": "Persistent Identifier for the access type."
+                "supportsRoles": {
+                    "type": "boolean",
+                    "description": "does the collection support assigning roles to its members"
                 },
-                "name": {
-                    "type": "string",
-                    "description": "Name of the access type"
+                "membershipIsMutable": {
+                    "type": "boolean",
+                    "description": "is collection membership mutable (can members be added and removed)"
+                },
+                "metadataIsMutable": {
+                    "type": "boolean",
+                    "description": "is collection metadata mutable (can the metadata of this collection be changed)"
+                },
+                "maxDepth": {
+                    "type": "integer",
+                    "description": "maximum depth to which collection members can be expanded (and traversed in reverse??)",
+                    "default": 0
                 }
             }
         },
@@ -606,23 +749,28 @@
             "type": "object",
             "required": [
                 "datatype",
-                "tid"
+                "id",
+                "location"
             ],
             "properties": {
-                "pid": {
+                "id": {
                     "type": "string",
-                    "description": "Persistent Identifier for the item"
+                    "description": "Identifier for the member"
                 },
-                "tid": {
+                "location": {
                     "type": "string",
-                    "description": "Temporary identifier for the item, may be the same as the pid"
+                    "description": "Location at which the item data can be retrieved"
                 },
                 "datatype": {
                     "type": "string",
                     "description": "URI of the data type of this item"
                 },
-                "access_type": {
-                    "$ref": "#/definitions/AccessType"
+                "model": {
+                    "type": "string",
+                    "description": "URI of an ontology model class that applies to this item"
+                },
+                "mappings": {
+                    "$ref": "#/definitions/CollectionItemMappingMetadata"
                 }
             }
         },
@@ -631,29 +779,142 @@
             "type": "object",
             "required": [
                 "pid",
-                "description",
-                "display_name",
-                "model_type",
-                "access_type"
+                "capabilities",
+                "properties",
+                "description"
             ],
             "properties": {
                 "pid": {
                     "type": "string",
                     "description": "Persistent Identifier for the collection."
                 },
+                "capabilities": {
+                    "$ref": "#/definitions/CollectionCapabilities"
+                },
+                "properties": {
+                    "$ref": "#/definitions/CollectionProperties"
+                },
                 "description": {
+                    "type": "object",
+                    "description": "Descriptive metadata about the collection"
+                }
+            }
+        },
+        "CollectionProperties": {
+            "description": "Functional Properties of the Collection",
+            "type": "object",
+            "required": [
+                "ownership",
+                "model",
+                "hasAccessRestrictions"
+            ],
+            "properties": {
+                "ownership": {
+                    "$ref": "#/definitions/CollectionOwnership"
+                },
+                "license": {
                     "type": "string",
-                    "description": "Description of the collection."
+                    "description": "URI of the license that applies to the collection"
                 },
-                "display_name": {
+                "model": {
                     "type": "string",
-                    "description": "Display name of the collection."
+                    "description": "URI of the collection modeltype that applies to the collection"
                 },
-                "model_type": {
-                    "$ref": "#/definitions/ModelType"
+                "hasAccessRestrictions": {
+                    "type": "boolean",
+                    "description": "indicates whether the collection is fully open or has access restrictions"
                 },
-                "access_type": {
-                    "$ref": "#/definitions/AccessType"
+                "memberOf": {
+                    "type": "array",
+                    "description": "list of collections to which this collection itself belongs. only possible if maxDepth capability > 0",
+                    "items": {
+                        "$ref": "#/definitions/Collection"
+                    }
+                },
+                "siblings": {
+                    "$ref": "#/definitions/CollectionSiblings"
+                },
+                "descriptionOntology": {
+                    "type": "string",
+                    "description": "URI of an ontology used for descriptive metadata"
+                }
+            }
+        },
+        "CollectionSiblings": {
+            "description": "Next/Previous Siblings of a Collection",
+            "type": "object",
+            "required": [
+                "next",
+                "previous"
+            ],
+            "properties": {
+                "next": {
+                    "$ref": "#/definitions/Collection"
+                },
+                "previous": {
+                    "$ref": "#/definitions/Collection"
+                }
+            }
+        },
+        "CollectionOwnership": {
+            "description": "Ownership Metadata about the Collection (from the purview of the API)",
+            "type": "object",
+            "required": [
+                "owner"
+            ],
+            "properties": {
+                "owner": {
+                    "type": "array",
+                    "description": "list of owners identified by URI",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "CollectionCursor": {
+            "description": "A Cursor for iterating a response set of Collections",
+            "type": "object",
+            "required": [
+                "contents",
+                "next_cursor",
+                "prev_cursor"
+            ],
+            "properties": {
+                "contents": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Collection"
+                    }
+                },
+                "next_cursor": {
+                    "type": "string"
+                },
+                "prev_cursor": {
+                    "type": "string"
+                }
+            }
+        },
+        "MemberCursor": {
+            "description": "A Cursor for iterating a response set of Collection Members",
+            "type": "object",
+            "required": [
+                "contents",
+                "next_cursor",
+                "prev_cursor"
+            ],
+            "properties": {
+                "contents": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Item"
+                    }
+                },
+                "next_cursor": {
+                    "type": "string"
+                },
+                "prev_cursor": {
+                    "type": "string"
                 }
             }
         },
@@ -669,6 +930,38 @@
                 },
                 "fields": {
                     "type": "string"
+                }
+            }
+        },
+        "ServiceCapabilities": {
+            "description": "Service Level Capabilities",
+            "type": "object",
+            "properties": {
+                "pidProviderType": {
+                    "type": "string",
+                    "description": "URI which describes the type of PID this collection service assigns to new items, if any"
+                },
+                "enforcesAccess": {
+                    "type": "boolean",
+                    "description": "whether or not the service enforces access controls"
+                },
+                "supportsPagination": {
+                    "type": "boolean",
+                    "description": "whether or not the service can paginate cursors"
+                }
+            }
+        },
+        "CollectionItemMappingMetadata": {
+            "description": "metadata on an item which is available by mapping from capabilities",
+            "type": "object",
+            "properties": {
+                "role": {
+                    "type": "string",
+                    "description": "URI of the role that applies to this item. Only available if the collection supportsRoles"
+                },
+                "index": {
+                    "type": "integer",
+                    "description": "position of the item in the collection. Only available if the Collection isOrdered"
                 }
             }
         }
