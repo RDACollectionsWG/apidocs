@@ -508,6 +508,12 @@
                         "type": "string"
                     },
                     {
+                        "name": "filter_by_index",
+                        "in": "query",
+                        "description": "Filter by the index of the item in the collection (only if ordered)",
+                        "type": "integer"
+                    },
+                    {
                         "name": "cursor",
                         "in": "query",
                         "description": "cursor for iterating a prior response to this query",
@@ -573,7 +579,7 @@
                 }
             }
         },
-        "/collections/{id}/members/{tid}": {
+        "/collections/{id}/members/{mid}": {
             "get": {
                 "summary": "Get a specific member in a collection",
                 "description": "Get a specific member in a collection",
@@ -586,7 +592,7 @@
                         "type": "string"
                     },
                     {
-                        "name": "tid",
+                        "name": "mid",
                         "in": "path",
                         "type": "string",
                         "description": "Identifier for the collection member",
@@ -617,7 +623,7 @@
                         "type": "string"
                     },
                     {
-                        "name": "tid",
+                        "name": "mid",
                         "in": "path",
                         "type": "string",
                         "description": "Identifier for the collection member",
@@ -676,7 +682,7 @@
                         "type": "string"
                     },
                     {
-                        "name": "tid",
+                        "name": "mid",
                         "in": "path",
                         "type": "string",
                         "description": "Identifier for the collection member",
