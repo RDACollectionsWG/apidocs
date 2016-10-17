@@ -29,7 +29,8 @@
     "paths": {
         "/capabilities": {
             "get": {
-                "summary": "Get the service-level capabilities",
+                "summary": "Gets the service-level capabilities.",
+                "description": "This request returns the service-level capapibilities. Examples of service-level capabilities might include whether or not the service supports assignment of PIDs for collection members, whether it supports pagination and cursors, whether it enforces  access controls, etc.",
                 "tags": [
                     "Service"
                 ],
@@ -45,8 +46,8 @@
         },
         "/collections": {
             "get": {
-                "summary": "Get list of all collections",
-                "description": "The Collections endpoint returns information about the collections available at this service. \nThe response includes the PID for the collection, the display name and other metadata.\n",
+                "summary": "Get a list of all collections",
+                "description": "This request returns a list of the collections provided by this service.  This may be a complete list, or if the service capabilities indicate support for pagination, the cursors in the response may be used to iterate backwards and forwards through pages of partial results. Query parameters may be used to supply filtering criteria for the response.",
                 "parameters": [
                     {
                         "name": "filter_by_modeltype",
@@ -88,13 +89,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "A collections cursor",
+                        "description": "A resultset containing a list of collection objects.",
                         "schema": {
-                            "$ref": "#/definitions/CollectionCursor"
+                            "$ref": "#/definitions/CollectionResultSet"
                         }
                     },
-                    "default": {
-                        "description": "Unexpected error",
+                    "400": {
+                        "description": "Invalid Input. The query was malformed.",
                         "schema": {
                             "$ref": "#/definitions/Error"
                         }
@@ -103,15 +104,15 @@
             },
             "post": {
                 "summary": "Create a new collection.",
-                "description": "Creates a new collection in the collection store.",
+                "description": "This request adds a new collection to the collection store.  The Collection Object properties must be supplied in the  body of the request. ",
                 "parameters": [
                     {
                         "name": "content",
                         "in": "body",
-                        "description": "collection metadata",
+                        "description": "The properties of the collection.",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/Collection"
+                            "$ref": "#/definitions/CollectionObject"
                         }
                     }
                 ],
@@ -129,17 +130,17 @@
                     "201": {
                         "description": "Successful creation",
                         "schema": {
-                            "$ref": "#/definitions/Collection"
+                            "$ref": "#/definitions/CollectionObject"
                         }
                     },
-                    "405": {
-                        "description": "Invalid Input",
+                    "400": {
+                        "description": "Invalid Input. The collection properties were malformed or invalid.",
                         "schema": {
                             "$ref": "#/definitions/Error"
                         }
                     },
-                    "default": {
-                        "description": "Unexpected error",
+                    "401": {
+                        "description": "Unauthorized. Request was not authorized.",
                         "schema": {
                             "$ref": "#/definitions/Error"
                         }
@@ -149,13 +150,13 @@
         },
         "/collections/{id}": {
             "get": {
-                "summary": "Get metadata about a specific collection",
-                "description": "Gets a specific collection by its pid",
+                "summary": "Get the properties of a specific collection.",
+                "description": "This request returns the Collection Object Properties for the collection identified by the provided id.",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Persistent identifier for the collection",
+                        "description": "Identifier for the collection",
                         "required": true,
                         "type": "string"
                     }
@@ -167,14 +168,26 @@
                     "200": {
                         "description": "The requested collection",
                         "schema": {
-                            "$ref": "#/definitions/Collection"
+                            "$ref": "#/definitions/CollectionObject"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized. Request was not authorized.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "404": {
+                        "description": "The requested collection was not found",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
             },
             "put": {
-                "summary": "Update collection metadata",
-                "description": "Updates collection metadata",
+                "summary": "Update the properties of a Collection Object",
+                "description": "This request updates the properties of the collection identified by the provided id. The updated collection properties must be supplied in the body of the request. The response may differ depending upon whether or not the  service capabilities indicate support for syncrhonous actions.",
                 "parameters": [
                     {
                         "name": "id",
@@ -186,10 +199,10 @@
                     {
                         "name": "content",
                         "in": "body",
-                        "description": "collection metadata",
+                        "description": "The properties of the colleciton to be updated.",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/Collection"
+                            "$ref": "#/definitions/CollectionObject"
                         }
                     }
                 ],
@@ -205,19 +218,34 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successful update",
+                        "description": "Successful update, returns the updated collection.",
                         "schema": {
-                            "$ref": "#/definitions/Collection"
+                            "$ref": "#/definitions/CollectionObject"
                         }
                     },
-                    "405": {
-                        "description": "Invalid Input",
+                    "202": {
+                        "description": "Accepted update request. Empty response body."
+                    },
+                    "400": {
+                        "description": "Invalid Input. The collection properties were malformed or invalid.",
                         "schema": {
                             "$ref": "#/definitions/Error"
                         }
                     },
-                    "default": {
-                        "description": "Unexpected error",
+                    "401": {
+                        "description": "Unauthorized. Request was not authorized.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden. May be returned, for example, if a request was made to update a collection whose metadata is not mutable.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "404": {
+                        "description": "The collection identified for update was not found",
                         "schema": {
                             "$ref": "#/definitions/Error"
                         }
@@ -226,12 +254,12 @@
             },
             "delete": {
                 "summary": "Delete a collection",
-                "description": "Deletes a collection",
+                "description": "This request deletes the collection idenified by the provided id from the collection store. The response may differ depending upon whether or not the service capabilities indicate support for synchronous actions.",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Persistent identifier for the collection",
+                        "description": "identifier for the collection",
                         "required": true,
                         "type": "string"
                     }
@@ -248,19 +276,19 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successful deletion",
-                        "schema": {
-                            "$ref": "#/definitions/Collection"
-                        }
+                        "description": "Successful deletion. Empty response body."
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "202": {
+                        "description": "Accepted deletion request. Empty response body."
+                    },
+                    "401": {
+                        "description": "Unauthorized. Request was not authorized.",
                         "schema": {
                             "$ref": "#/definitions/Error"
                         }
                     },
-                    "default": {
-                        "description": "Unexpected error",
+                    "404": {
+                        "description": "The collection identified for deletion was not found",
                         "schema": {
                             "$ref": "#/definitions/Error"
                         }
@@ -271,12 +299,12 @@
         "/collections/{id}/capabilities": {
             "get": {
                 "summary": "Get the capabilities of this collection",
-                "description": "Get the capabilities of this collection",
+                "description": "This request returns the capabilities metadata for the collection identified by the supplied id. The collection capabilities describe the actions and operations that are available for this collection.",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Persistent identifier for the collection",
+                        "description": "Identifier for the collection",
                         "required": true,
                         "type": "string"
                     }
@@ -286,39 +314,52 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "The capabilities",
+                        "description": "The collection capabilities metadata.",
                         "schema": {
                             "$ref": "#/definitions/CollectionCapabilities"
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized. Request was not authorized.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "404": {
+                        "description": "The collection identified was not found",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
                     }
                 }
             }
         },
-        "/collections/{id}/matches": {
+        "/collections/{id}/operations/matchingMembers": {
             "post": {
-                "summary": "Find members matching the supplied member",
-                "description": "Find members matching the supplied member",
+                "summary": "Find member objects in a collection which match the supplied member object",
+                "description": "This request accepts as input the complete or partial properties of a member object and returns a ResultSet containing any objects which were deemed to 'match' the supplied properties among the members of the identified collection. If the service capabilities indicate support for pagination, a cursor may be supplied to iterate backwards and forwards through paged results from prior executions of this query.",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Persistent identifier for the collection",
+                        "description": "identifier for the collection",
                         "required": true,
                         "type": "string"
                     },
                     {
-                        "name": "member",
+                        "name": "memberProperties",
                         "in": "body",
+                        "description": "the member item properties to use when matching",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/Item"
+                            "$ref": "#/definitions/MemberItem"
                         }
                     },
                     {
                         "name": "cursor",
                         "in": "query",
                         "type": "string",
-                        "description": "cursor for iterating a prior response to this query"
+                        "description": "If the service supports pagination and a cursor was returned in a prior  response to this query, this can be used to requeste a particular page of the  results."
                     }
                 ],
                 "tags": [
@@ -333,19 +374,19 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Union of members in the two collections",
+                        "description": "A resulset containing the matching member items from the two collections.",
                         "schema": {
-                            "$ref": "#/definitions/MemberCursor"
+                            "$ref": "#/definitions/MemberResultSet"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "401": {
+                        "description": "Unauthorized. Request was not authorized.",
                         "schema": {
                             "$ref": "#/definitions/Error"
                         }
                     },
-                    "default": {
-                        "description": "Unexpected error",
+                    "404": {
+                        "description": "The collection identified was not found",
                         "schema": {
                             "$ref": "#/definitions/Error"
                         }
@@ -353,21 +394,22 @@
                 }
             }
         },
-        "/collections/{id}/intersects": {
+        "/collections/{id}/operations/intersectionOf/{otherId}": {
             "get": {
                 "summary": "Retrieve the members at the intersection of two collections",
-                "description": "Retrieve the members at the intersection of two collections",
+                "description": "This request returns a resultset containing the members at the intersection of two collections. If the service capabilities indicate support for pagination, a cursor may be supplied to iterate backwards and forwards through paged results from prior executions of this query. The response may be an empty set.",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Persistent identifier for the collection",
+                        "description": "Identifier for the first collection in the operation",
                         "required": true,
                         "type": "string"
                     },
                     {
                         "name": "otherId",
-                        "in": "query",
+                        "in": "path",
+                        "description": "Identifier for the second collection in the operation",
                         "required": true,
                         "type": "string"
                     },
@@ -375,7 +417,7 @@
                         "name": "cursor",
                         "in": "query",
                         "type": "string",
-                        "description": "cursor for iterating a prior response to this query"
+                        "description": "-> If the service supports pagination and a cursor was returned in a prior response to this query, this can be used to requeste a particular page of the results."
                     }
                 ],
                 "tags": [
@@ -390,19 +432,19 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Members at the intersection",
+                        "description": "A resultset containing the intersection of member items from the two collections.",
                         "schema": {
-                            "$ref": "#/definitions/MemberCursor"
+                            "$ref": "#/definitions/MemberResultSet"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "401": {
+                        "description": "Unauthorized. Request was not authorized.",
                         "schema": {
                             "$ref": "#/definitions/Error"
                         }
                     },
-                    "default": {
-                        "description": "Unexpected error",
+                    "404": {
+                        "description": "One or both of the requested collections was not found.",
                         "schema": {
                             "$ref": "#/definitions/Error"
                         }
@@ -410,21 +452,22 @@
                 }
             }
         },
-        "/collections/{id}/union": {
+        "/collections/{id}/operations/unionOf/{otherId}": {
             "get": {
                 "summary": "Retrieve the union of two collections",
-                "description": "Retrieve the union of two collections",
+                "description": "This request returns a resultset containing the members at the union of two collections. If the service capabilities indicate support for pagination, a cursor may be supplied to iterate backwards and forwards through paged results from prior executions of this query. The response may be an empty set.",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Persistent identifier for the collection",
+                        "description": "Identifier for the first collection in the operation",
                         "required": true,
                         "type": "string"
                     },
                     {
                         "name": "otherId",
-                        "in": "query",
+                        "in": "path",
+                        "description": "Identifier for the second collection in the operation",
                         "required": true,
                         "type": "string"
                     },
@@ -432,7 +475,7 @@
                         "name": "cursor",
                         "in": "query",
                         "type": "string",
-                        "description": "cursor for iterating a prior response to this query"
+                        "description": "-> If the service supports pagination and a cursor was returned in a prior response to this query, this can be used to requeste a particular page of the results."
                     }
                 ],
                 "tags": [
@@ -447,19 +490,19 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Union of members in the two collections",
+                        "description": "A resultset containing the union of member items from the two collections",
                         "schema": {
-                            "$ref": "#/definitions/MemberCursor"
+                            "$ref": "#/definitions/MemberResultSet"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "401": {
+                        "description": "Unauthorized. Request was not authorized.",
                         "schema": {
                             "$ref": "#/definitions/Error"
                         }
                     },
-                    "default": {
-                        "description": "Unexpected error",
+                    "404": {
+                        "description": "One or both of the requested collections was not found.",
                         "schema": {
                             "$ref": "#/definitions/Error"
                         }
@@ -470,12 +513,12 @@
         "/collections/{id}/members": {
             "get": {
                 "summary": "Get the members in a collection",
-                "description": "Gets members from a collection",
+                "description": "This request returns the list of members contained in a collection.  This may be a complete list, or if the service capabilities indicate support for pagination, the cursors in the response may be used to iterate backwards and forwards through pages of partial results. Query parameters may be used to supply filtering criteria for the response.",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Persistent identifier for the collection",
+                        "description": "Identifier for the collection",
                         "required": true,
                         "type": "string"
                     },
@@ -532,30 +575,49 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "An array of collection members",
+                        "description": "A resultset containing the list of member items in the identified collection.",
                         "schema": {
-                            "$ref": "#/definitions/MemberCursor"
+                            "$ref": "#/definitions/MemberResultSet"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input. The filter query was malformed.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized. Request was not authorized.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "404": {
+                        "description": "The collection identified was not found",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
             },
             "post": {
-                "summary": "Add a new member to this collection",
-                "description": "Adds a new member to a collection",
+                "summary": "Add a new member item to this collection",
+                "description": "This request adds a new member item to a collection. If the service capabilities indicate that the service supports PID assignment to member items, then if no id is supplied for the item it  will be assigned automatically.  ",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Persistent identifier for the collection",
+                        "description": "Identifier for the collection",
                         "required": true,
                         "type": "string"
                     },
                     {
                         "name": "content",
                         "in": "body",
+                        "description": "The properties of the member item to add to the collection. Id may be required.",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/Item"
+                            "$ref": "#/definitions/MemberItem"
                         }
                     }
                 ],
@@ -573,7 +635,25 @@
                     "201": {
                         "description": "Successful creation",
                         "schema": {
-                            "$ref": "#/definitions/Item"
+                            "$ref": "#/definitions/MemberItem"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid Request. Indicates that member properties were incorrect or invalid in  some way."
+                    },
+                    "401": {
+                        "description": "Unauthorized. Request was not authorized.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden. May be returned, for example, if a request was made to add  an item to a static collection."
+                    },
+                    "404": {
+                        "description": "Not found. The collection was not found for adding items.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -581,13 +661,13 @@
         },
         "/collections/{id}/members/{mid}": {
             "get": {
-                "summary": "Get a specific member in a collection",
-                "description": "Get a specific member in a collection",
+                "summary": "Get the properties of a member item in a collection",
+                "description": "This request retrieves the properties of a specific member item from a collection",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Persistent identifier for the collection",
+                        "description": "Identifier for the collection",
                         "required": true,
                         "type": "string"
                     },
@@ -595,7 +675,7 @@
                         "name": "mid",
                         "in": "path",
                         "type": "string",
-                        "description": "Identifier for the collection member",
+                        "description": "Identifier for the collection member item.",
                         "required": true
                     }
                 ],
@@ -606,19 +686,31 @@
                     "200": {
                         "description": "The requested member",
                         "schema": {
-                            "$ref": "#/definitions/Item"
+                            "$ref": "#/definitions/MemberItem"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized. Request was not authorized.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found. The requested collection or member item was not found.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
             },
             "put": {
-                "summary": "Update an member in a collection",
-                "description": "Updates an member in a collection",
+                "summary": "Update the properties of a collection member item.",
+                "description": "This request updates the properties of a collection member item.  The updated member  properties must be supplied in the body of the request. The response may differ  depending upon whether or not the  service capabilities indicate support  for synchronous actions.",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Persistent identifier for the collection",
+                        "description": "Identifier for the collection",
                         "required": true,
                         "type": "string"
                     },
@@ -635,7 +727,7 @@
                         "description": "collection metadata",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/Collection"
+                            "$ref": "#/definitions/CollectionObject"
                         }
                     }
                 ],
@@ -651,19 +743,34 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successful update",
+                        "description": "Successful update. The updated member item is returned in the response.",
                         "schema": {
-                            "$ref": "#/definitions/Item"
+                            "$ref": "#/definitions/MemberItem"
                         }
                     },
-                    "405": {
+                    "202": {
+                        "description": "Accepted update request. Empty response body."
+                    },
+                    "400": {
                         "description": "Invalid Input",
                         "schema": {
                             "$ref": "#/definitions/Error"
                         }
                     },
-                    "default": {
-                        "description": "Unexpected error",
+                    "401": {
+                        "description": "Unauthorized. Request was not authorized.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden. May be returned, for example, if a request was made to update an item in a static collection.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found. The requested collection or member item was not found.",
                         "schema": {
                             "$ref": "#/definitions/Error"
                         }
@@ -671,8 +778,8 @@
                 }
             },
             "delete": {
-                "summary": "Delete a collection member",
-                "description": "Deletes a collection member",
+                "summary": "Remove a collection member item.",
+                "description": "Removes a member item from a collection. The response may differ depending upon whether or not the  service capabilities indicate support for synchronous actions.",
                 "parameters": [
                     {
                         "name": "id",
@@ -690,7 +797,7 @@
                     }
                 ],
                 "tags": [
-                    "Collections"
+                    "Members"
                 ],
                 "security": [
                     {
@@ -701,10 +808,19 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successful deletion",
+                        "description": "Successful removal. Empty response body."
+                    },
+                    "202": {
+                        "description": "Accepted request. Empty response body."
+                    },
+                    "401": {
+                        "description": "Unauthorized. Request was not authorized.",
                         "schema": {
-                            "$ref": "#/definitions/Collection"
+                            "$ref": "#/definitions/Error"
                         }
+                    },
+                    "403": {
+                        "description": "Forbidden. May be returned, for example, if a request was made to remove  item from a static collection."
                     },
                     "404": {
                         "description": "Not Found",
@@ -714,6 +830,58 @@
                     },
                     "default": {
                         "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{id}/members/{mid}/properties/{property}": {
+            "get": {
+                "summary": "Get a named property of a member item in a collection",
+                "description": "This request retrieves a specific named property of a specific member item from a collection",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Identifier for the collection",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "mid",
+                        "in": "path",
+                        "type": "string",
+                        "description": "Identifier for the collection member item.",
+                        "required": true
+                    },
+                    {
+                        "name": "property",
+                        "in": "path",
+                        "type": "string",
+                        "description": "the name of a property to retrieve (e.g. index)",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Members"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The requested member",
+                        "schema": {
+                            "$ref": "#/definitions/MemberItem"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized. Request was not authorized.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found. The requested collection or member item was not found.",
                         "schema": {
                             "$ref": "#/definitions/Error"
                         }
@@ -750,11 +918,10 @@
                 }
             }
         },
-        "Item": {
-            "description": "A data item in a collection",
+        "MemberItem": {
+            "description": "A member item in a collection",
             "type": "object",
             "required": [
-                "datatype",
                 "id",
                 "location"
             ],
@@ -771,7 +938,7 @@
                     "type": "string",
                     "description": "URI of the data type of this item"
                 },
-                "model": {
+                "ontology": {
                     "type": "string",
                     "description": "URI of an ontology model class that applies to this item"
                 },
@@ -780,38 +947,11 @@
                 }
             }
         },
-        "Collection": {
-            "description": "A collection",
-            "type": "object",
-            "required": [
-                "pid",
-                "capabilities",
-                "properties",
-                "description"
-            ],
-            "properties": {
-                "pid": {
-                    "type": "string",
-                    "description": "Persistent Identifier for the collection."
-                },
-                "capabilities": {
-                    "$ref": "#/definitions/CollectionCapabilities"
-                },
-                "properties": {
-                    "$ref": "#/definitions/CollectionProperties"
-                },
-                "description": {
-                    "type": "object",
-                    "description": "Descriptive metadata about the collection"
-                }
-            }
-        },
         "CollectionProperties": {
             "description": "Functional Properties of the Collection",
             "type": "object",
             "required": [
                 "ownership",
-                "model",
                 "hasAccessRestrictions"
             ],
             "properties": {
@@ -822,7 +962,7 @@
                     "type": "string",
                     "description": "URI of the license that applies to the collection"
                 },
-                "model": {
+                "modelType": {
                     "type": "string",
                     "description": "URI of the collection modeltype that applies to the collection"
                 },
@@ -832,13 +972,10 @@
                 },
                 "memberOf": {
                     "type": "array",
-                    "description": "list of collections to which this collection itself belongs. only possible if maxDepth capability > 0",
+                    "description": "list of collection identifiers to which this collection itself belongs. only possible if maxDepth capability > 0",
                     "items": {
-                        "$ref": "#/definitions/Collection"
+                        "type": "string"
                     }
-                },
-                "siblings": {
-                    "$ref": "#/definitions/CollectionSiblings"
                 },
                 "descriptionOntology": {
                     "type": "string",
@@ -846,19 +983,28 @@
                 }
             }
         },
-        "CollectionSiblings": {
-            "description": "Next/Previous Siblings of a Collection",
+        "CollectionObject": {
+            "description": "A collection object.",
             "type": "object",
             "required": [
-                "next",
-                "previous"
+                "id",
+                "capabilities",
+                "properties"
             ],
             "properties": {
-                "next": {
-                    "$ref": "#/definitions/Collection"
+                "id": {
+                    "type": "string",
+                    "description": "Identifier for the collection."
                 },
-                "previous": {
-                    "$ref": "#/definitions/Collection"
+                "capabilities": {
+                    "$ref": "#/definitions/CollectionCapabilities"
+                },
+                "properties": {
+                    "$ref": "#/definitions/CollectionProperties"
+                },
+                "description": {
+                    "type": "object",
+                    "description": "Descriptive metadata about the collection"
                 }
             }
         },
@@ -878,74 +1024,76 @@
                 }
             }
         },
-        "CollectionCursor": {
-            "description": "A Cursor for iterating a response set of Collections",
+        "CollectionResultSet": {
+            "description": "A resultset containing a potentially iterable list of Collections Objects.",
             "type": "object",
             "required": [
-                "contents",
-                "next_cursor",
-                "prev_cursor"
+                "contents"
             ],
             "properties": {
                 "contents": {
                     "type": "array",
+                    "description": "list of Collection Objects returned in response to a query",
                     "items": {
-                        "$ref": "#/definitions/Collection"
+                        "$ref": "#/definitions/CollectionObject"
                     }
                 },
                 "next_cursor": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "If the service supports pagination, and the resultset is paginated, cursor which can be used to retrieve the next page in the results."
                 },
                 "prev_cursor": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "If the service supports pagination, and the resultset is paginated, cursor which can be used to retrieve the next page in the results."
                 }
             }
         },
-        "MemberCursor": {
-            "description": "A Cursor for iterating a response set of Collection Members",
+        "MemberResultSet": {
+            "description": "A resultset containing a potentially iterable list of Member Items",
             "type": "object",
             "required": [
-                "contents",
-                "next_cursor",
-                "prev_cursor"
+                "contents"
             ],
             "properties": {
                 "contents": {
                     "type": "array",
+                    "description": "list of Member Items returned in responses to a query",
                     "items": {
-                        "$ref": "#/definitions/Item"
+                        "$ref": "#/definitions/MemberItem"
                     }
                 },
                 "next_cursor": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "If the service supports pagination, and the resultset is paginated, cursor which can be used to retrieve the next page in the results."
                 },
                 "prev_cursor": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "If the service supports pagination, and the resultset is paginated, cursor which can be used to retrieve the next page in the results."
                 }
             }
         },
         "Error": {
             "type": "object",
+            "description": "A error response object",
             "properties": {
                 "code": {
                     "type": "integer",
-                    "format": "int32"
+                    "format": "int32",
+                    "description": "error code"
                 },
                 "message": {
-                    "type": "string"
-                },
-                "fields": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "error message"
                 }
             }
         },
         "ServiceCapabilities": {
-            "description": "Service Level Capabilities",
+            "description": "Service Level Capabilities Metadata.",
             "type": "object",
             "properties": {
                 "pidProviderType": {
                     "type": "string",
-                    "description": "URI which describes the type of PID this collection service assigns to new items, if any"
+                    "description": "URI which identifies the type of PID this collection service assigns to new items, if any"
                 },
                 "enforcesAccess": {
                     "type": "boolean",
@@ -954,6 +1102,14 @@
                 "supportsPagination": {
                     "type": "boolean",
                     "description": "whether or not the service can paginate cursors"
+                },
+                "synchronousActions": {
+                    "type": "boolean",
+                    "description": "whether or not actions such as update, delete occur synchronously or get queued for later action."
+                },
+                "ruleBasedGeneration": {
+                    "type": "boolean",
+                    "description": "whether or not the service allows rule-based generation of new collections"
                 }
             }
         },
@@ -963,11 +1119,11 @@
             "properties": {
                 "role": {
                     "type": "string",
-                    "description": "URI of the role that applies to this item. Only available if the collection supportsRoles"
+                    "description": "URI of the role that applies to this item. Only available if the collection supportsRoles per its capabilities"
                 },
                 "index": {
                     "type": "integer",
-                    "description": "position of the item in the collection. Only available if the Collection isOrdered"
+                    "description": "position of the item in the collection. Only available if the Collection isOrdered per its capabilities"
                 }
             }
         }

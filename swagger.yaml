@@ -1,0 +1,862 @@
+swagger: '2.0'
+info:
+  title: RDA Collections API
+  description: API Strawman for RDA Research Data Collections WG
+  version: 1.0.0
+host: api.example.org
+schemes:
+  - https
+basePath: /v1
+produces:
+  - application/json
+securityDefinitions:
+  oauth:
+    type: oauth2
+    authorizationUrl: 'http://example.org/oauth/authorize'
+    flow: accessCode
+    tokenUrl: 'http://example.org/oauth/token'
+    scopes:
+      write: Can write collections
+      read: Can read collections
+      modify: Can modify collections
+paths:
+  /capabilities:
+    get:
+      summary: Gets the service-level capabilities.
+      description: >-
+        This request returns the service-level capapibilities. Examples of
+        service-level capabilities might include whether or not the service
+        supports assignment of PIDs for collection members, whether it supports
+        pagination and cursors, whether it enforces  access controls, etc.
+      tags:
+        - Service
+      responses:
+        '200':
+          description: Service Level Capabilities
+          schema:
+            $ref: '#/definitions/ServiceCapabilities'
+  /collections:
+    get:
+      summary: Get a list of all collections
+      description: >-
+        This request returns a list of the collections provided by this
+        service.  This may be a complete list, or if the service capabilities
+        indicate support for pagination, the cursors in the response may be used
+        to iterate backwards and forwards through pages of partial results.
+        Query parameters may be used to supply filtering criteria for the
+        response.
+      parameters:
+        - name: filter_by_modeltype
+          in: query
+          description: Filter by type of collection model.
+          required: false
+          type: string
+        - name: filter_by_datatype
+          in: query
+          description: Filter collections by data type of contained collection member.
+          required: false
+          type: string
+        - name: filter_by_accesstype
+          in: query
+          description: Filter collections by type of collection access type.
+          required: false
+          type: string
+        - name: filter_by_owner
+          in: query
+          description: Filter collections by owner of the collection
+          type: string
+        - name: sort
+          in: query
+          description: Sort criteria
+          type: string
+          required: false
+      tags:
+        - Collections
+      responses:
+        '200':
+          description: A resultset containing a list of collection objects.
+          schema:
+            $ref: '#/definitions/CollectionResultSet'
+        '400':
+          description: Invalid Input. The query was malformed.
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      summary: Create a new collection.
+      description: >-
+        This request adds a new collection to the collection store.  The
+        Collection Object properties must be supplied in the  body of the
+        request. 
+      parameters:
+        - name: content
+          in: body
+          description: The properties of the collection.
+          required: true
+          schema:
+            $ref: '#/definitions/CollectionObject'
+      tags:
+        - Collections
+      security:
+        - oauth:
+            - write
+      responses:
+        '201':
+          description: Successful creation
+          schema:
+            $ref: '#/definitions/CollectionObject'
+        '400':
+          description: Invalid Input. The collection properties were malformed or invalid.
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized. Request was not authorized.
+          schema:
+            $ref: '#/definitions/Error'
+  '/collections/{id}':
+    get:
+      summary: Get the properties of a specific collection.
+      description: >-
+        This request returns the Collection Object Properties for the collection
+        identified by the provided id.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier for the collection
+          required: true
+          type: string
+      tags:
+        - Collections
+      responses:
+        '200':
+          description: The requested collection
+          schema:
+            $ref: '#/definitions/CollectionObject'
+        '401':
+          description: Unauthorized. Request was not authorized.
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: The requested collection was not found
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      summary: Update the properties of a Collection Object
+      description: >-
+        This request updates the properties of the collection identified by the
+        provided id. The updated collection properties must be supplied in the
+        body of the request. The response may differ depending upon whether or
+        not the  service capabilities indicate support for syncrhonous actions.
+      parameters:
+        - name: id
+          in: path
+          description: Persistent identifier for the collection
+          required: true
+          type: string
+        - name: content
+          in: body
+          description: The properties of the colleciton to be updated.
+          required: true
+          schema:
+            $ref: '#/definitions/CollectionObject'
+      tags:
+        - Collections
+      security:
+        - oauth:
+            - modify
+      responses:
+        '200':
+          description: 'Successful update, returns the updated collection.'
+          schema:
+            $ref: '#/definitions/CollectionObject'
+        '202':
+          description: Accepted update request. Empty response body.
+        '400':
+          description: Invalid Input. The collection properties were malformed or invalid.
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized. Request was not authorized.
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: >-
+            Forbidden. May be returned, for example, if a request was made to update
+            a collection whose metadata is not mutable.
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: The collection identified for update was not found
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      summary: Delete a collection
+      description: >-
+        This request deletes the collection idenified by the provided id from
+        the collection store. The response may differ depending upon whether or
+        not the service capabilities indicate support for synchronous actions.
+      parameters:
+        - name: id
+          in: path
+          description: identifier for the collection
+          required: true
+          type: string
+      tags:
+        - Collections
+      security:
+        - oauth:
+            - write
+      responses:
+        '200':
+          description: Successful deletion. Empty response body.
+        '202':
+          description: Accepted deletion request. Empty response body.
+        '401':
+          description: Unauthorized. Request was not authorized.
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: The collection identified for deletion was not found
+          schema:
+            $ref: '#/definitions/Error'
+  '/collections/{id}/capabilities':
+    get:
+      summary: Get the capabilities of this collection
+      description: >-
+        This request returns the capabilities metadata for the collection
+        identified by the supplied id. The collection capabilities describe the
+        actions and operations that are available for this collection.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier for the collection
+          required: true
+          type: string
+      tags:
+        - Collections
+      responses:
+        '200':
+          description: The collection capabilities metadata.
+          schema:
+            $ref: '#/definitions/CollectionCapabilities'
+        '401':
+          description: Unauthorized. Request was not authorized.
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: The collection identified was not found
+          schema:
+            $ref: '#/definitions/Error'
+  '/collections/{id}/operations/matchingMembers':
+    post:
+      summary: >-
+        Find member objects in a collection which match the supplied member
+        object
+      description: >-
+        This request accepts as input the complete or partial properties of a
+        member object and returns a ResultSet containing any objects which were
+        deemed to 'match' the supplied properties among the members of the
+        identified collection. If the service capabilities indicate support for
+        pagination, a cursor may be supplied to iterate backwards and forwards
+        through paged results from prior executions of this query.
+      parameters:
+        - name: id
+          in: path
+          description: identifier for the collection
+          required: true
+          type: string
+        - name: memberProperties
+          in: body
+          description: the member item properties to use when matching
+          required: true
+          schema:
+            $ref: '#/definitions/MemberItem'
+        - name: cursor
+          in: query
+          type: string
+          description: >-
+            If the service supports pagination and a cursor was returned in a prior 
+            response to this query, this can be used to requeste a particular page of the 
+            results.
+      tags:
+        - Collections
+      security:
+        - oauth:
+            - read
+      responses:
+        '200':
+          description: A resulset containing the matching member items from the two collections. 
+          schema:
+            $ref: '#/definitions/MemberResultSet'
+        '401':
+          description: Unauthorized. Request was not authorized.
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: The collection identified was not found
+          schema:
+            $ref: '#/definitions/Error'
+  '/collections/{id}/operations/intersectionOf/{otherId}':
+    get:
+      summary: Retrieve the members at the intersection of two collections
+      description: >-
+        This request returns a resultset containing the members at the
+        intersection of two collections. If the service capabilities indicate
+        support for pagination, a cursor may be supplied to iterate backwards
+        and forwards through paged results from prior executions of this query.
+        The response may be an empty set.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier for the first collection in the operation
+          required: true
+          type: string
+        - name: otherId
+          in: path
+          description: Identifier for the second collection in the operation
+          required: true
+          type: string
+        - name: cursor
+          in: query
+          type: string
+          description: ->
+            If the service supports pagination and a cursor was returned in a prior 
+            response to this query, this can be used to requeste a particular page of the 
+            results.
+      tags:
+        - Collections
+      security:
+        - oauth:
+            - read
+      responses:
+        '200':
+          description: A resultset containing the intersection of member items from the two collections.
+          schema:
+            $ref: '#/definitions/MemberResultSet'
+        '401':
+          description: Unauthorized. Request was not authorized.
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: One or both of the requested collections was not found.
+          schema:
+            $ref: '#/definitions/Error'
+  '/collections/{id}/operations/unionOf/{otherId}':
+    get:
+      summary: Retrieve the union of two collections
+      description: >-
+        This request returns a resultset containing the members at the union
+        of two collections. If the service capabilities indicate support for
+        pagination, a cursor may be supplied to iterate backwards and forwards
+        through paged results from prior executions of this query. The response
+        may be an empty set.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier for the first collection in the operation
+          required: true
+          type: string
+        - name: otherId
+          in: path
+          description: Identifier for the second collection in the operation
+          required: true
+          type: string
+        - name: cursor
+          in: query
+          type: string
+          description: -> 
+            If the service supports pagination and a cursor was returned in a prior 
+            response to this query, this can be used to requeste a particular page of the 
+            results.
+      tags:
+        - Collections
+      security:
+        - oauth:
+            - read
+      responses:
+        '200':
+          description: A resultset containing the union of member items from the two collections
+          schema:
+            $ref: '#/definitions/MemberResultSet'
+        '401':
+          description: Unauthorized. Request was not authorized.
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: One or both of the requested collections was not found.
+          schema:
+            $ref: '#/definitions/Error'
+  '/collections/{id}/members':
+    get:
+      summary: Get the members in a collection
+      description: >-
+        This request returns the list of members contained in a collection. 
+        This may be a complete list, or if the service capabilities
+        indicate support for pagination, the cursors in the response may be used
+        to iterate backwards and forwards through pages of partial results.
+        Query parameters may be used to supply filtering criteria for the
+        response.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier for the collection
+          required: true
+          type: string
+        - name: filter_by_datatype
+          in: query
+          description: Filter by datatype of collection member
+          required: false
+          type: string
+        - name: filter_by_pidtype
+          in: query
+          description: Filter by pid type of the collection member
+          required: false
+          type: string
+        - name: filter_by_accesstype
+          in: query
+          description: Filter by access type of collection member
+          required: false
+          type: string
+        - name: filter_by_role
+          in: query
+          description: Filter by the role of a collection memeber
+          required: false
+          type: string
+        - name: filter_by_index
+          in: query
+          description: Filter by the index of the item in the collection (only if ordered)
+          type: integer
+        - name: cursor
+          in: query
+          description: cursor for iterating a prior response to this query
+          type: string
+        - name: expandDepth
+          in: query
+          description: >-
+            expand members which are collections to this depth. may not exceed
+            maxDepth capability for the collection
+          type: integer
+          required: false
+      tags:
+        - Members
+      responses:
+        '200':
+          description: A resultset containing the list of member items in the identified collection.
+          schema:
+            $ref: '#/definitions/MemberResultSet'
+        '400':
+          description: Invalid input. The filter query was malformed.
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized. Request was not authorized.
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: The collection identified was not found
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      summary: Add a new member item to this collection
+      description: >-
+        This request adds a new member item to a collection. If the service capabilities indicate that
+        the service supports PID assignment to member items, then if no id is supplied for the item it 
+        will be assigned automatically.  
+      parameters:
+        - name: id
+          in: path
+          description: Identifier for the collection
+          required: true
+          type: string
+        - name: content
+          in: body
+          description: The properties of the member item to add to the collection. Id may be required.
+          required: true
+          schema:
+            $ref: '#/definitions/MemberItem'
+      security:
+        - oauth:
+            - write
+      tags:
+        - Members
+      responses:
+        '201':
+          description: Successful creation
+          schema:
+            $ref: '#/definitions/MemberItem'
+        '400':
+          description: >-
+            Invalid Request. Indicates that member properties were incorrect or invalid in 
+            some way.
+        '401':
+          description: Unauthorized. Request was not authorized.
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: >-
+            Forbidden. May be returned, for example, if a request was made to add 
+            an item to a static collection.
+        '404':
+          description: Not found. The collection was not found for adding items.
+          schema:
+            $ref: '#/definitions/Error'
+  '/collections/{id}/members/{mid}':
+    get:
+      summary: Get the properties of a member item in a collection
+      description: >-
+        This request retrieves the properties of a specific member item from a collection
+      parameters:
+        - name: id
+          in: path
+          description: Identifier for the collection
+          required: true
+          type: string
+        - name: mid
+          in: path
+          type: string
+          description: Identifier for the collection member item.
+          required: true
+      tags:
+        - Members
+      responses:
+        '200':
+          description: The requested member
+          schema:
+            $ref: '#/definitions/MemberItem'
+        '401':
+          description: Unauthorized. Request was not authorized.
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not found. The requested collection or member item was not found.
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      summary: Update the properties of a collection member item.
+      description: >-
+        This request updates the properties of a collection member item.  The updated member 
+        properties must be supplied in the body of the request. The response may differ 
+        depending upon whether or not the  service capabilities indicate support 
+        for synchronous actions.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier for the collection
+          required: true
+          type: string
+        - name: mid
+          in: path
+          type: string
+          description: Identifier for the collection member
+          required: true
+        - name: content
+          in: body
+          description: collection metadata
+          required: true
+          schema:
+            $ref: '#/definitions/CollectionObject'
+      tags:
+        - Members
+      security:
+        - oauth:
+            - modify
+      responses:
+        '200':
+          description: Successful update. The updated member item is returned in the response.
+          schema:
+            $ref: '#/definitions/MemberItem'
+        '202':
+          description: Accepted update request. Empty response body.
+        '400':
+          description: Invalid Input
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized. Request was not authorized.
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: >-
+            Forbidden. May be returned, for example, if a request was made to update
+            an item in a static collection.
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not found. The requested collection or member item was not found.
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      summary: Remove a collection member item.
+      description: Removes a member item from a collection. The response may differ 
+        depending upon whether or not the  service capabilities indicate support 
+        for synchronous actions.
+      parameters:
+        - name: id
+          in: path
+          description: Persistent identifier for the collection
+          required: true
+          type: string
+        - name: mid
+          in: path
+          type: string
+          description: Identifier for the collection member
+          required: true
+      tags:
+        - Members
+      security:
+        - oauth:
+            - write
+      responses:
+        '200':
+          description: Successful removal. Empty response body.
+        '202':
+          description: Accepted request. Empty response body.
+        '401':
+          description: Unauthorized. Request was not authorized.
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: >-
+            Forbidden. May be returned, for example, if a request was made to remove 
+            item from a static collection.
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/collections/{id}/members/{mid}/properties/{property}':
+    get:
+      summary: Get a named property of a member item in a collection
+      description: >-
+        This request retrieves a specific named property of a specific member item from a collection
+      parameters:
+        - name: id
+          in: path
+          description: Identifier for the collection
+          required: true
+          type: string
+        - name: mid
+          in: path
+          type: string
+          description: Identifier for the collection member item.
+          required: true
+        - name: property
+          in: path
+          type: string
+          description: the name of a property to retrieve (e.g. index)
+          required: true
+      tags:
+        - Members
+      responses:
+        '200':
+          description: The requested member
+          schema:
+            $ref: '#/definitions/MemberItem'
+        '401':
+          description: Unauthorized. Request was not authorized.
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not found. The requested collection or member item was not found.
+          schema:
+            $ref: '#/definitions/Error'
+definitions:
+ 
+  CollectionCapabilities:
+    description: Collection Capabilities
+    type: object
+    properties:
+      isOrdered:
+        type: boolean
+        description: are the members in the collection ordered
+      supportsRoles:
+        type: boolean
+        description: does the collection support assigning roles to its members
+      membershipIsMutable:
+        type: boolean
+        description: is collection membership mutable (can members be added and removed)
+      metadataIsMutable:
+        type: boolean
+        description: >-
+          is collection metadata mutable (can the metadata of this collection be
+          changed)
+      maxDepth:
+        type: integer
+        description: >-
+          maximum depth to which collection members can be expanded (and
+          traversed in reverse??)
+        default: 0
+  MemberItem:
+    description: A member item in a collection
+    type: object
+    required:
+      - id
+      - location
+    properties:
+      id:
+        type: string
+        description: Identifier for the member
+      location:
+        type: string
+        description: Location at which the item data can be retrieved
+      datatype:
+        type: string
+        description: URI of the data type of this item
+      ontology:
+        type: string
+        description: URI of an ontology model class that applies to this item
+      mappings:
+        $ref: '#/definitions/CollectionItemMappingMetadata'
+  CollectionProperties:
+    description: Functional Properties of the Collection
+    type: object
+    required:
+      - ownership
+      - hasAccessRestrictions
+    properties:
+      ownership:
+        $ref: '#/definitions/CollectionOwnership'
+      license:
+        type: string
+        description: URI of the license that applies to the collection
+      modelType:
+        type: string
+        description: URI of the collection modeltype that applies to the collection
+      hasAccessRestrictions:
+        type: boolean
+        description: >-
+          indicates whether the collection is fully open or has access
+          restrictions
+      memberOf:
+        type: array
+        description: >-
+          list of collection identifiers to which this collection itself belongs. only
+          possible if maxDepth capability > 0
+        items:
+          type: string
+      descriptionOntology:
+        type: string
+        description: URI of an ontology used for descriptive metadata
+  CollectionObject:
+    description: A collection object.
+    type: object
+    required:
+      - id
+      - capabilities
+      - properties
+    properties:
+      id:
+        type: string
+        description: Identifier for the collection.
+      capabilities:
+        $ref: '#/definitions/CollectionCapabilities'
+      properties:
+        $ref: '#/definitions/CollectionProperties'
+      description:
+        type: object
+        description: Descriptive metadata about the collection
+  CollectionOwnership:
+    description: Ownership Metadata about the Collection (from the purview of the API)
+    type: object
+    required:
+      - owner
+    properties:
+      owner:
+        type: array
+        description: list of owners identified by URI
+        items:
+          type: string
+  CollectionResultSet:
+    description: A resultset containing a potentially iterable list of Collections Objects.
+    type: object
+    required:
+      - contents
+    properties:
+      contents:
+        type: array
+        description: list of Collection Objects returned in response to a query
+        items:
+          $ref: '#/definitions/CollectionObject'
+      next_cursor:
+        type: string
+        description: >-
+          If the service supports pagination, and the resultset is paginated, cursor which
+          can be used to retrieve the next page in the results.
+      prev_cursor:
+        type: string
+        description: >-
+          If the service supports pagination, and the resultset is paginated, cursor which
+          can be used to retrieve the next page in the results.
+  MemberResultSet:
+    description: A resultset containing a potentially iterable list of Member Items
+    type: object
+    required:
+      - contents
+    properties:
+      contents:
+        type: array
+        description: list of Member Items returned in responses to a query
+        items:
+          $ref: '#/definitions/MemberItem'
+      next_cursor:
+        type: string
+        description: >-
+          If the service supports pagination, and the resultset is paginated, cursor which
+          can be used to retrieve the next page in the results.
+      prev_cursor:
+        type: string
+        description: >-
+          If the service supports pagination, and the resultset is paginated, cursor which
+          can be used to retrieve the next page in the results.
+  Error:
+    type: object
+    description: A error response object
+    properties:
+      code:
+        type: integer
+        format: int32
+        description: error code
+      message:
+        type: string
+        description: error message
+  ServiceCapabilities:
+    description: Service Level Capabilities Metadata.
+    type: object
+    properties:
+      pidProviderType:
+        type: string
+        description: >-
+          URI which identifies the type of PID this collection service assigns
+          to new items, if any
+      enforcesAccess:
+        type: boolean
+        description: whether or not the service enforces access controls
+      supportsPagination:
+        type: boolean
+        description: whether or not the service can paginate cursors
+      synchronousActions:
+        type: boolean
+        description: >-
+          whether or not actions such as update, delete occur synchronously
+          or get queued for later action.
+      ruleBasedGeneration:
+        type: boolean
+        description: >-
+          whether or not the service allows rule-based generation of new
+          collections
+  CollectionItemMappingMetadata:
+    description: metadata on an item which is available by mapping from capabilities
+    type: object
+    properties:
+      role:
+        type: string
+        description: >-
+          URI of the role that applies to this item. Only available if the
+          collection supportsRoles per its capabilities
+      index:
+        type: integer
+        description: >-
+          position of the item in the collection. Only available if the
+          Collection isOrdered per its capabilities
