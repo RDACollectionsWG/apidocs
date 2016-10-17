@@ -246,7 +246,7 @@ paths:
           description: The collection identified was not found
           schema:
             $ref: '#/definitions/Error'
-  '/collections/{id}/operations/matchingMembers':
+  '/collections/{id}/ops/matchingMembers':
     post:
       summary: >-
         Find member objects in a collection which match the supplied member
@@ -295,7 +295,7 @@ paths:
           description: The collection identified was not found
           schema:
             $ref: '#/definitions/Error'
-  '/collections/{id}/operations/intersectionOf/{otherId}':
+  '/collections/{id}/ops/intersectionOf/{otherId}':
     get:
       summary: Retrieve the members at the intersection of two collections
       description: >-
@@ -340,7 +340,7 @@ paths:
           description: One or both of the requested collections was not found.
           schema:
             $ref: '#/definitions/Error'
-  '/collections/{id}/operations/unionOf/{otherId}':
+  '/collections/{id}/ops/unionOf/{otherId}':
     get:
       summary: Retrieve the union of two collections
       description: >-

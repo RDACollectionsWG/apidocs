@@ -334,7 +334,7 @@
                 }
             }
         },
-        "/collections/{id}/operations/matchingMembers": {
+        "/collections/{id}/ops/matchingMembers": {
             "post": {
                 "summary": "Find member objects in a collection which match the supplied member object",
                 "description": "This request accepts as input the complete or partial properties of a member object and returns a ResultSet containing any objects which were deemed to 'match' the supplied properties among the members of the identified collection. If the service capabilities indicate support for pagination, a cursor may be supplied to iterate backwards and forwards through paged results from prior executions of this query.",
@@ -394,7 +394,7 @@
                 }
             }
         },
-        "/collections/{id}/operations/intersectionOf/{otherId}": {
+        "/collections/{id}/ops/intersectionOf/{otherId}": {
             "get": {
                 "summary": "Retrieve the members at the intersection of two collections",
                 "description": "This request returns a resultset containing the members at the intersection of two collections. If the service capabilities indicate support for pagination, a cursor may be supplied to iterate backwards and forwards through paged results from prior executions of this query. The response may be an empty set.",
@@ -452,7 +452,7 @@
                 }
             }
         },
-        "/collections/{id}/operations/unionOf/{otherId}": {
+        "/collections/{id}/ops/unionOf/{otherId}": {
             "get": {
                 "summary": "Retrieve the union of two collections",
                 "description": "This request returns a resultset containing the members at the union of two collections. If the service capabilities indicate support for pagination, a cursor may be supplied to iterate backwards and forwards through paged results from prior executions of this query. The response may be an empty set.",
