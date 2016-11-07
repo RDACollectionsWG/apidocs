@@ -27,18 +27,18 @@
         }
     },
     "paths": {
-        "/capabilities": {
+        "/features": {
             "get": {
-                "summary": "Gets the service-level capabilities.",
-                "description": "This request returns the service-level capapibilities. Examples of service-level capabilities might include whether or not the service supports assignment of PIDs for collection members, whether it supports pagination and cursors, whether it enforces  access controls, etc.",
+                "summary": "Gets the service-level features.",
+                "description": "This request returns the service-level features. Examples of service-level features might include whether or not the service supports assignment of PIDs for collection members, whether it supports pagination and cursors, whether it enforces  access controls, etc.",
                 "tags": [
                     "Service"
                 ],
                 "responses": {
                     "200": {
-                        "description": "Service Level Capabilities",
+                        "description": "Service Level Features",
                         "schema": {
-                            "$ref": "#/definitions/ServiceCapabilities"
+                            "$ref": "#/definitions/ServiceFeatures"
                         }
                     }
                 }
@@ -47,34 +47,38 @@
         "/collections": {
             "get": {
                 "summary": "Get a list of all collections",
-                "description": "This request returns a list of the collections provided by this service.  This may be a complete list, or if the service capabilities indicate support for pagination, the cursors in the response may be used to iterate backwards and forwards through pages of partial results. Query parameters may be used to supply filtering criteria for the response.",
+                "description": "This request returns a list of the collections provided by this service.  This may be a complete list, or if the service features include support for pagination, the cursors in the response may be used to iterate backwards and forwards through pages of partial results. Query parameters may be used to supply filtering criteria for the response. When combining filters of different types, the boolean AND will be used. When combining multiple instances of filters of the same type, the boolean OR will be used.",
                 "parameters": [
                     {
                         "name": "filter_by_modeltype",
                         "in": "query",
                         "description": "Filter by type of collection model.",
                         "required": false,
-                        "type": "string"
+                        "type": "string",
+                        "collectionFormat": "multi"
                     },
                     {
                         "name": "filter_by_datatype",
                         "in": "query",
                         "description": "Filter collections by data type of contained collection member.",
                         "required": false,
-                        "type": "string"
+                        "type": "string",
+                        "collectionFormat": "multi"
                     },
                     {
                         "name": "filter_by_accesstype",
                         "in": "query",
                         "description": "Filter collections by type of collection access type.",
                         "required": false,
-                        "type": "string"
+                        "type": "string",
+                        "collectionFormat": "multi"
                     },
                     {
                         "name": "filter_by_owner",
                         "in": "query",
                         "description": "Filter collections by owner of the collection",
-                        "type": "string"
+                        "type": "string",
+                        "collectionFormat": "multi"
                     },
                     {
                         "name": "sort",
@@ -133,6 +137,9 @@
                             "$ref": "#/definitions/CollectionObject"
                         }
                     },
+                    "202": {
+                        "description": "Accepted create request. Empty response body. (For asyncrhonous requests,  if supported by the service features)."
+                    },
                     "400": {
                         "description": "Invalid Input. The collection properties were malformed or invalid.",
                         "schema": {
@@ -187,7 +194,7 @@
             },
             "put": {
                 "summary": "Update the properties of a Collection Object",
-                "description": "This request updates the properties of the collection identified by the provided id. The updated collection properties must be supplied in the body of the request. The response may differ depending upon whether or not the  service capabilities indicate support for syncrhonous actions.",
+                "description": "This request updates the properties of the collection identified by the provided id. The updated collection properties must be supplied in the body of the request. The response may differ depending upon whether or not the  service features include support for syncrhonous actions.",
                 "parameters": [
                     {
                         "name": "id",
@@ -224,7 +231,7 @@
                         }
                     },
                     "202": {
-                        "description": "Accepted update request. Empty response body."
+                        "description": "Accepted update request. Empty response body. (For asynchronous requests if supported by service features.)"
                     },
                     "400": {
                         "description": "Invalid Input. The collection properties were malformed or invalid.",
@@ -254,7 +261,7 @@
             },
             "delete": {
                 "summary": "Delete a collection",
-                "description": "This request deletes the collection idenified by the provided id from the collection store. The response may differ depending upon whether or not the service capabilities indicate support for synchronous actions.",
+                "description": "This request deletes the collection idenified by the provided id from the collection store. The response may differ depending upon whether or not the service features include support for synchronous actions.",
                 "parameters": [
                     {
                         "name": "id",
@@ -279,7 +286,7 @@
                         "description": "Successful deletion. Empty response body."
                     },
                     "202": {
-                        "description": "Accepted deletion request. Empty response body."
+                        "description": "Accepted deletion request. Empty response body. (For asynchronous requests if supported by service features.)"
                     },
                     "401": {
                         "description": "Unauthorized. Request was not authorized.",
@@ -337,7 +344,7 @@
         "/collections/{id}/ops/matchingMembers": {
             "post": {
                 "summary": "Find member objects in a collection which match the supplied member object",
-                "description": "This request accepts as input the complete or partial properties of a member object and returns a ResultSet containing any objects which were deemed to 'match' the supplied properties among the members of the identified collection. If the service capabilities indicate support for pagination, a cursor may be supplied to iterate backwards and forwards through paged results from prior executions of this query.",
+                "description": "This request accepts as input the complete or partial properties of a member object and returns a ResultSet containing any objects which were deemed to 'match' the supplied properties among the members of the identified collection. If the service features include support for pagination, a cursor may be supplied to iterate backwards and forwards through paged results from prior executions of this query.",
                 "parameters": [
                     {
                         "name": "id",
@@ -397,7 +404,7 @@
         "/collections/{id}/ops/intersectionOf/{otherId}": {
             "get": {
                 "summary": "Retrieve the members at the intersection of two collections",
-                "description": "This request returns a resultset containing the members at the intersection of two collections. If the service capabilities indicate support for pagination, a cursor may be supplied to iterate backwards and forwards through paged results from prior executions of this query. The response may be an empty set.",
+                "description": "This request returns a resultset containing the members at the intersection of two collections. If the service features include support for pagination, a cursor may be supplied to iterate backwards and forwards through paged results from prior executions of this query. The response may be an empty set.",
                 "parameters": [
                     {
                         "name": "id",
@@ -455,7 +462,7 @@
         "/collections/{id}/ops/unionOf/{otherId}": {
             "get": {
                 "summary": "Retrieve the union of two collections",
-                "description": "This request returns a resultset containing the members at the union of two collections. If the service capabilities indicate support for pagination, a cursor may be supplied to iterate backwards and forwards through paged results from prior executions of this query. The response may be an empty set.",
+                "description": "This request returns a resultset containing the members at the union of two collections. If the service features include support for pagination, a cursor may be supplied to iterate backwards and forwards through paged results from prior executions of this query. The response may be an empty set.",
                 "parameters": [
                     {
                         "name": "id",
@@ -513,7 +520,7 @@
         "/collections/{id}/members": {
             "get": {
                 "summary": "Get the members in a collection",
-                "description": "This request returns the list of members contained in a collection.  This may be a complete list, or if the service capabilities indicate support for pagination, the cursors in the response may be used to iterate backwards and forwards through pages of partial results. Query parameters may be used to supply filtering criteria for the response.",
+                "description": "This request returns the list of members contained in a collection.  This may be a complete list, or if the service features include support for pagination, the cursors in the response may be used to iterate backwards and forwards through pages of partial results. Query parameters may be used to supply filtering criteria for the response. When combining filters of different types, the boolean AND will be used. When combining multiple instances of filters of the same type, the boolean OR will be used.",
                 "parameters": [
                     {
                         "name": "id",
@@ -527,34 +534,39 @@
                         "in": "query",
                         "description": "Filter by datatype of collection member",
                         "required": false,
-                        "type": "string"
+                        "type": "string",
+                        "collectionFormat": "multi"
                     },
                     {
                         "name": "filter_by_pidtype",
                         "in": "query",
                         "description": "Filter by pid type of the collection member",
                         "required": false,
-                        "type": "string"
+                        "type": "string",
+                        "collectionFormat": "multi"
                     },
                     {
                         "name": "filter_by_accesstype",
                         "in": "query",
                         "description": "Filter by access type of collection member",
                         "required": false,
-                        "type": "string"
+                        "type": "string",
+                        "collectionFormat": "multi"
                     },
                     {
                         "name": "filter_by_role",
                         "in": "query",
                         "description": "Filter by the role of a collection memeber",
                         "required": false,
-                        "type": "string"
+                        "type": "string",
+                        "collectionFormat": "multi"
                     },
                     {
                         "name": "filter_by_index",
                         "in": "query",
                         "description": "Filter by the index of the item in the collection (only if ordered)",
-                        "type": "integer"
+                        "type": "integer",
+                        "collectionFormat": "multi"
                     },
                     {
                         "name": "cursor",
@@ -565,7 +577,7 @@
                     {
                         "name": "expandDepth",
                         "in": "query",
-                        "description": "expand members which are collections to this depth. may not exceed maxDepth capability for the collection",
+                        "description": "expand members which are collections to this depth. may not exceed maxExpansionDepth feature setting for the service.",
                         "type": "integer",
                         "required": false
                     }
@@ -602,7 +614,7 @@
             },
             "post": {
                 "summary": "Add a new member item to this collection",
-                "description": "This request adds a new member item to a collection. If the service capabilities indicate that the service supports PID assignment to member items, then if no id is supplied for the item it  will be assigned automatically.  ",
+                "description": "This request adds a new member item to a collection. If the service features include support for PID assignment to member items, then if no id is supplied for the item it  will be assigned automatically.  ",
                 "parameters": [
                     {
                         "name": "id",
@@ -637,6 +649,9 @@
                         "schema": {
                             "$ref": "#/definitions/MemberItem"
                         }
+                    },
+                    "202": {
+                        "description": "Accepted add request. Empty response body. (For asyncrhonous requests,  if supported by the service features)."
                     },
                     "400": {
                         "description": "Invalid Request. Indicates that member properties were incorrect or invalid in  some way."
@@ -705,7 +720,7 @@
             },
             "put": {
                 "summary": "Update the properties of a collection member item.",
-                "description": "This request updates the properties of a collection member item.  The updated member  properties must be supplied in the body of the request. The response may differ  depending upon whether or not the  service capabilities indicate support  for synchronous actions.",
+                "description": "This request updates the properties of a collection member item.  The updated member  properties must be supplied in the body of the request. The response may differ  depending upon whether or not the  service features include support  for asynchronous actions.",
                 "parameters": [
                     {
                         "name": "id",
@@ -749,7 +764,7 @@
                         }
                     },
                     "202": {
-                        "description": "Accepted update request. Empty response body."
+                        "description": "Accepted update request. Empty response body. (For asynchronous requests if supported by service features.)"
                     },
                     "400": {
                         "description": "Invalid Input",
@@ -779,7 +794,7 @@
             },
             "delete": {
                 "summary": "Remove a collection member item.",
-                "description": "Removes a member item from a collection. The response may differ depending upon whether or not the  service capabilities indicate support for synchronous actions.",
+                "description": "Removes a member item from a collection. The response may differ depending upon whether or not the  service features include support for asynchronous actions.",
                 "parameters": [
                     {
                         "name": "id",
@@ -811,7 +826,7 @@
                         "description": "Successful removal. Empty response body."
                     },
                     "202": {
-                        "description": "Accepted request. Empty response body."
+                        "description": "Accepted request. Empty response body. (For asynchronous requests, if supported by service features.)"
                     },
                     "401": {
                         "description": "Unauthorized. Request was not authorized.",
@@ -887,6 +902,124 @@
                         }
                     }
                 }
+            },
+            "put": {
+                "summary": "Update a named property of a member item in a collection",
+                "description": "This request updates a specific named property of a specific member item from a collection",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Identifier for the collection",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "mid",
+                        "in": "path",
+                        "type": "string",
+                        "description": "Identifier for the collection member item.",
+                        "required": true
+                    },
+                    {
+                        "name": "property",
+                        "in": "path",
+                        "type": "string",
+                        "description": "the name of a property to update",
+                        "required": true
+                    },
+                    {
+                        "name": "content",
+                        "in": "body",
+                        "description": "new property value",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Members"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful update. The updated member item is returned in the response.",
+                        "schema": {
+                            "$ref": "#/definitions/MemberItem"
+                        }
+                    },
+                    "202": {
+                        "description": "Accepted update request. Empty response body. (For asynchronous requests, if supported by service features.)"
+                    },
+                    "401": {
+                        "description": "Unauthorized. Request was not authorized.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden. May be returned, for example, if a request was made to update a static item."
+                    },
+                    "404": {
+                        "description": "Not found. The requested collection or member item was not found.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete a named property of a member item in a collection",
+                "description": "This request deletes a specific named property of a specific member item from a collection",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Identifier for the collection",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "mid",
+                        "in": "path",
+                        "type": "string",
+                        "description": "Identifier for the collection member item.",
+                        "required": true
+                    },
+                    {
+                        "name": "property",
+                        "in": "path",
+                        "type": "string",
+                        "description": "the name of a property to update",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Members"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful deletion. Empty response body."
+                    },
+                    "202": {
+                        "description": "Accepted delete request. Empty response body. (For asyncrhonous requests, if supported by service features.)"
+                    },
+                    "401": {
+                        "description": "Unauthorized. Request was not authorized.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden. May be returned, for example, if a request was made to delete a required metadata property or update a static item."
+                    },
+                    "404": {
+                        "description": "Not found. The requested collection or member item was not found.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
             }
         }
     },
@@ -894,6 +1027,12 @@
         "CollectionCapabilities": {
             "description": "Collection Capabilities",
             "type": "object",
+            "required": [
+                "isOrdered",
+                "supportsRoles",
+                "membershipIsMutable",
+                "metadataIsMutable"
+            ],
             "properties": {
                 "isOrdered": {
                     "type": "boolean",
@@ -911,10 +1050,10 @@
                     "type": "boolean",
                     "description": "is collection metadata mutable (can the metadata of this collection be changed)"
                 },
-                "maxDepth": {
-                    "type": "integer",
-                    "description": "maximum depth to which collection members can be expanded (and traversed in reverse??)",
-                    "default": 0
+                "appendsToEnd": {
+                    "type": "boolean",
+                    "description": "for an ordered collection, indicates that new items are appended to the end rather than insertable at a specified, possibly invalid, index points. Only valid if isOrdered is true.",
+                    "default": true
                 }
             }
         },
@@ -1017,7 +1156,7 @@
             "properties": {
                 "owner": {
                     "type": "array",
-                    "description": "list of owners identified by URI",
+                    "description": "list of owners, ideally identified by URI",
                     "items": {
                         "type": "string"
                     }
@@ -1087,13 +1226,21 @@
                 }
             }
         },
-        "ServiceCapabilities": {
-            "description": "Service Level Capabilities Metadata.",
+        "ServiceFeatures": {
+            "description": "Service Level Features Metadata.",
             "type": "object",
+            "required": [
+                "pidProviderType",
+                "enforcesAccess",
+                "supportsPagination",
+                "synchronousActions",
+                "ruleBasedGeneration",
+                "maxExpansionDepth"
+            ],
             "properties": {
                 "pidProviderType": {
                     "type": "string",
-                    "description": "URI which identifies the type of PID this collection service assigns to new items, if any"
+                    "description": "Should be either an entry from a Controlled Vocabulary, maintained by the service end-point with unambigous PID service names, or a registered data type indicating a PID service. "
                 },
                 "enforcesAccess": {
                     "type": "boolean",
@@ -1110,6 +1257,11 @@
                 "ruleBasedGeneration": {
                     "type": "boolean",
                     "description": "whether or not the service allows rule-based generation of new collections"
+                },
+                "maxExpansionDepth": {
+                    "type": "integer",
+                    "description": "The maximum depth to which collection members can be expanded. A value of 0 means that expansion is not supppoted. A value of -1 means that the collections can be expanded to infinite depth.",
+                    "default": 0
                 }
             }
         },
