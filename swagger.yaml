@@ -260,7 +260,7 @@ paths:
           description: The collection identified was not found
           schema:
             $ref: '#/definitions/Error'
-  '/collections/{id}/ops/matchingMembers':
+  '/collections/{id}/ops/findMatch':
     post:
       summary: >-
         Find member objects in a collection which match the supplied member
@@ -311,7 +311,7 @@ paths:
           description: The collection identified was not found
           schema:
             $ref: '#/definitions/Error'
-  '/collections/{id}/ops/intersectionOf/{otherId}':
+  '/collections/{id}/ops/intersection/{otherId}':
     get:
       summary: Retrieve the members at the intersection of two collections
       description: >-
@@ -335,7 +335,7 @@ paths:
           in: query
           type: string
           description: >-
-            -> If the service supports pagination and a cursor was returned in a
+            If the service supports pagination and a cursor was returned in a
             prior response to this query, this can be used to requeste a
             particular page of the results.
       tags:
@@ -358,7 +358,7 @@ paths:
           description: One or both of the requested collections was not found.
           schema:
             $ref: '#/definitions/Error'
-  '/collections/{id}/ops/unionOf/{otherId}':
+  '/collections/{id}/ops/union/{otherId}':
     get:
       summary: Retrieve the union of two collections
       description: >-
@@ -382,7 +382,46 @@ paths:
           in: query
           type: string
           description: >-
-            -> If the service supports pagination and a cursor was returned in a
+            If the service supports pagination and a cursor was returned in a
+            prior response to this query, this can be used to requeste a
+            particular page of the results.
+      tags:
+        - Collections
+      security:
+        - oauth:
+            - read
+      responses:
+        '200':
+          description: >-
+            A resultset containing the union of member items from the two
+            collections
+          schema:
+            $ref: '#/definitions/MemberResultSet'
+        '401':
+          description: Unauthorized. Request was not authorized.
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: One or both of the requested collections was not found.
+          schema:
+            $ref: '#/definitions/Error'
+  '/collections/{id}/ops/flatten':
+    get:
+      summary: Flattens the collection
+      description: >-
+        This request returns a resultset which is a flattened representation of
+        a collection of collections into a single collection.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier for the collection to be flattened
+          required: true
+          type: string
+        - name: cursor
+          in: query
+          type: string
+          description: >-
+            If the service supports pagination and a cursor was returned in a
             prior response to this query, this can be used to requeste a
             particular page of the results.
       tags:
@@ -802,35 +841,57 @@ paths:
             $ref: '#/definitions/Error'
 definitions:
   CollectionCapabilities:
-    description: Collection Capabilities
+    description: Capabilities define the set of actions that are supported by a collection. 
     type: object
     required:
       - isOrdered
+      - appendsToEnd
       - supportsRoles
       - membershipIsMutable
       - metadataIsMutable
+      - isHomogenous
+      - maxLength
     properties:
       isOrdered:
         type: boolean
-        description: are the members in the collection ordered
-      supportsRoles:
-        type: boolean
-        description: does the collection support assigning roles to its members
-      membershipIsMutable:
-        type: boolean
-        description: is collection membership mutable (can members be added and removed)
-      metadataIsMutable:
-        type: boolean
         description: >-
-          is collection metadata mutable (can the metadata of this collection be
-          changed)
+          Identifies whether the collection items are kept in a consistent, meaningful order. The exact
+          nature of the ordering is not specified, but see also appendsToEnd property.
+        default: false
       appendsToEnd:
         type: boolean
         description: >-
-          for an ordered collection, indicates that new items are appended to
+          For an ordered collection, indicates that new items are appended to
           the end rather than insertable at a specified, possibly invalid, index
           points. Only valid if isOrdered is true.
         default: true
+      supportsRoles:
+        type: boolean
+        description: >-
+          Indicates whether the collection supports assigning roles to its member items. Available roles
+          are determined by the Collection Model type.
+        default: false
+      membershipIsMutable:
+        type: boolean
+        description: >-
+          Indicates whether collection membership mutable (i.e. whether members can be added and removed)
+        default: true
+      metadataIsMutable:
+        type: boolean
+        description: >-
+          Indicates whether collection metadata is mutable (i.e. can the metadata of this collection be
+          changed)
+        default: true
+      isHomogenous:
+        type: boolean
+        description: >-
+          Indicates whether the collection is made up of homogenous or heterogenous member items.
+        default: true
+      maxLength:
+        type: integer
+        description: >- 
+          The maximum length of the Collection. -1 means length is not restricted.
+        default: -1
   MemberItem:
     description: A member item in a collection
     type: object
@@ -857,33 +918,46 @@ definitions:
     type: object
     required:
       - ownership
+      - license
+      - modelType
       - hasAccessRestrictions
+      - descriptionOntology
     properties:
       ownership:
-        $ref: '#/definitions/CollectionOwnership'
+        type: string
+        description: >-
+          Indicates the owner of the Collection. Implementation is expected to use a controlled vocabulary or PIDs.
       license:
         type: string
-        description: URI of the license that applies to the collection
+        description: >-
+          Indicates the license that applies to the Collection. Implementation is expected to use a controlled
+          vocabulary, stable URIs or PIDs of registered data types. 
       modelType:
         type: string
-        description: URI of the collection modeltype that applies to the collection
+        description: >-
+          Identifies the model that the collection adheres to. Iimplementation is expected to use a controlled
+          vocabulary, or PIDs of registered data types. 
       hasAccessRestrictions:
         type: boolean
         description: >-
-          indicates whether the collection is fully open or has access
-          restrictions
+          Indicates whether the collection is fully open or has access restrictions. 
+        default: false
       memberOf:
         type: array
         description: >-
-          list of collection identifiers to which this collection itself
-          belongs. only possible if maxDepth capability > 0
+          If provided, this is a list of collection identifiers to which this collection itself
+          belongs. This property is only meaningful if the service features supports a 
+          maximumExpansionDepth > 0.
         items:
           type: string
+        default: []
       descriptionOntology:
         type: string
-        description: URI of an ontology used for descriptive metadata
+        description: >-
+          Identifies the ontology used for descriptive metadata. Implementation is expected to supply the URI
+          of a controlled vocabulary.
   CollectionObject:
-    description: A collection object.
+    description: Defines the schema for a collection object.
     type: object
     required:
       - id
@@ -892,27 +966,21 @@ definitions:
     properties:
       id:
         type: string
-        description: Identifier for the collection.
+        description: >-
+          Identifier for the collection. This is ideally a PID.
       capabilities:
         $ref: '#/definitions/CollectionCapabilities'
       properties:
         $ref: '#/definitions/CollectionProperties'
       description:
         type: object
-        description: Descriptive metadata about the collection
-  CollectionOwnership:
-    description: Ownership Metadata about the Collection (from the purview of the API)
-    type: object
-    required:
-      - owner
-    properties:
-      owner:
-        type: array
-        description: 'list of owners, ideally identified by URI'
-        items:
-          type: string
+        description: >-
+          Descriptive metadata about the collection.  The properties available for this object are
+          dependent upon the description ontology used, as define in the collection properties.
   CollectionResultSet:
-    description: A resultset containing a potentially iterable list of Collections Objects.
+    description: >-
+      A resultset containing a potentially iterable list of Collections Objects. This is the 
+      schema for the response to any request which retrieves collection items.
     type: object
     required:
       - contents
@@ -926,14 +994,16 @@ definitions:
         type: string
         description: >-
           If the service supports pagination, and the resultset is paginated,
-          cursor which can be used to retrieve the next page in the results.
+          this will be a cursor which can be used to retrieve the next page in the results.
       prev_cursor:
         type: string
         description: >-
           If the service supports pagination, and the resultset is paginated,
-          cursor which can be used to retrieve the next page in the results.
+          this will be a cursor which can be used to retrieve the next page in the results.
   MemberResultSet:
-    description: A resultset containing a potentially iterable list of Member Items
+    description: >-
+      A resultset containing a potentially iterable list of Member Items. This is the schema for
+      the response to any request which retrieves collection members.
     type: object
     required:
       - contents
@@ -947,12 +1017,12 @@ definitions:
         type: string
         description: >-
           If the service supports pagination, and the resultset is paginated,
-          cursor which can be used to retrieve the next page in the results.
+          this will be cursor which can be used to retrieve the next page in the results.
       prev_cursor:
         type: string
         description: >-
           If the service supports pagination, and the resultset is paginated,
-          cursor which can be used to retrieve the next page in the results.
+          this will be cursor which can be used to retrieve the next page in the results.
   Error:
     type: object
     description: A error response object
@@ -965,7 +1035,7 @@ definitions:
         type: string
         description: error message
   ServiceFeatures:
-    description: Service Level Features Metadata.
+    description: Describes the properties of the response to the Service /features request.
     type: object
     required:
       - providesCollectionPids
@@ -1050,8 +1120,6 @@ definitions:
       - intersection
       - union
       - flatten
-    
-    
   CollectionItemMappingMetadata:
     description: metadata on an item which is available by mapping from capabilities
     type: object
