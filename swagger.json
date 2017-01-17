@@ -50,42 +50,27 @@
                 "description": "This request returns a list of the collections provided by this service.  This may be a complete list, or if the service features include support for pagination, the cursors in the response may be used to iterate backwards and forwards through pages of partial results. Query parameters may be used to supply filtering criteria for the response. When combining filters of different types, the boolean AND will be used. When combining multiple instances of filters of the same type, the boolean OR will be used.",
                 "parameters": [
                     {
-                        "name": "filter_by_modeltype",
+                        "name": "f_modelType",
                         "in": "query",
-                        "description": "Filter by type of collection model.",
+                        "description": "Filter response by the modelType property of the collection.",
                         "required": false,
                         "type": "string",
                         "collectionFormat": "multi"
                     },
                     {
-                        "name": "filter_by_datatype",
+                        "name": "f_memberType",
                         "in": "query",
-                        "description": "Filter collections by data type of contained collection member.",
+                        "description": "Filter response by the data type of contained collection member. A collection will meet this requirement if any of its members are of the requested type.",
                         "required": false,
                         "type": "string",
                         "collectionFormat": "multi"
                     },
                     {
-                        "name": "filter_by_accesstype",
+                        "name": "f_ownership",
                         "in": "query",
-                        "description": "Filter collections by type of collection access type.",
-                        "required": false,
+                        "description": "Filter response by the ownership property of the collection",
                         "type": "string",
                         "collectionFormat": "multi"
-                    },
-                    {
-                        "name": "filter_by_owner",
-                        "in": "query",
-                        "description": "Filter collections by owner of the collection",
-                        "type": "string",
-                        "collectionFormat": "multi"
-                    },
-                    {
-                        "name": "sort",
-                        "in": "query",
-                        "description": "Sort criteria",
-                        "type": "string",
-                        "required": false
                     }
                 ],
                 "tags": [
@@ -581,43 +566,36 @@
                         "type": "string"
                     },
                     {
-                        "name": "filter_by_datatype",
+                        "name": "f_datatype",
                         "in": "query",
-                        "description": "Filter by datatype of collection member",
+                        "description": "Filter response to members matching the requested datatype.",
                         "required": false,
                         "type": "string",
                         "collectionFormat": "multi"
                     },
                     {
-                        "name": "filter_by_pidtype",
+                        "name": "f_role",
                         "in": "query",
-                        "description": "Filter by pid type of the collection member",
+                        "description": "Filter response to members who are assigned the requested role. (Only if the collection capability supportsRoles is true).",
                         "required": false,
                         "type": "string",
                         "collectionFormat": "multi"
                     },
                     {
-                        "name": "filter_by_accesstype",
+                        "name": "f_index",
                         "in": "query",
-                        "description": "Filter by access type of collection member",
-                        "required": false,
-                        "type": "string",
-                        "collectionFormat": "multi"
-                    },
-                    {
-                        "name": "filter_by_role",
-                        "in": "query",
-                        "description": "Filter by the role of a collection memeber",
-                        "required": false,
-                        "type": "string",
-                        "collectionFormat": "multi"
-                    },
-                    {
-                        "name": "filter_by_index",
-                        "in": "query",
-                        "description": "Filter by the index of the item in the collection (only if ordered)",
+                        "description": "Filter response to the members assigned the requested index. (Only if the collection capability isOrdered is true).",
                         "type": "integer",
-                        "collectionFormat": "multi"
+                        "collectionFormat": "multi",
+                        "required": false
+                    },
+                    {
+                        "name": "dateAdded",
+                        "in": "query",
+                        "description": "Filter response to the membered added on the requestd datetime.",
+                        "type": "string",
+                        "format": "date-time",
+                        "required": false
                     },
                     {
                         "name": "cursor",
@@ -1084,7 +1062,7 @@
                 "supportsRoles",
                 "membershipIsMutable",
                 "metadataIsMutable",
-                "isHomogenous",
+                "restrictedToType",
                 "maxLength"
             ],
             "properties": {
@@ -1113,10 +1091,9 @@
                     "description": "Indicates whether collection metadata is mutable (i.e. can the metadata of this collection be changed)",
                     "default": true
                 },
-                "isHomogenous": {
-                    "type": "boolean",
-                    "description": "Indicates whether the collection is made up of homogenous or heterogenous member items.",
-                    "default": true
+                "restrictedToType": {
+                    "type": "string",
+                    "description": "If specified, indicates that the collection is made up of homogenous items of the specified type. Type should be specified using the PID of a registered Data Type or a controlled vocabulary."
                 },
                 "maxLength": {
                     "type": "integer",
@@ -1375,11 +1352,16 @@
             "properties": {
                 "role": {
                     "type": "string",
-                    "description": "URI of the role that applies to this item. Only available if the collection supportsRoles per its capabilities"
+                    "description": "The ole that applies to this item. Only available if the collection supportsRoles per its capabilities. A Controlled Vocabulary should be used."
                 },
                 "index": {
                     "type": "integer",
-                    "description": "position of the item in the collection. Only available if the Collection isOrdered per its capabilities"
+                    "description": "position of the item in the collection. Only available if the Collection isOrdered per its capabilities."
+                },
+                "dateAdded": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "The date the item was added to the collection."
                 }
             }
         }
