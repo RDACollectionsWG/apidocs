@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="x-ua-compatible" content="IE=edge">
   <title>Swagger UI</title>
   <link rel="icon" type="image/png" href="images/favicon-32x32.png" sizes="32x32" />
   <link rel="icon" type="image/png" href="images/favicon-16x16.png" sizes="16x16" />
@@ -37,7 +38,7 @@
       if (url && url.length > 1) {
         url = decodeURIComponent(url[1]);
       } else {
-        url = "https://raw.githubusercontent.com/RDACollectionsWG/apidocs/master/swagger.json";
+        url = "http://petstore.swagger.io/v2/swagger.json";
       }
 
       hljs.configure({
@@ -58,7 +59,7 @@
               clientId: "your-client-id",
               clientSecret: "your-client-secret-if-required",
               realm: "your-realms",
-              appName: "swagger-ui",
+              appName: "your-app-name",
               scopeSeparator: " ",
               additionalQueryStringParams: {}
             });
@@ -74,7 +75,8 @@
         docExpansion: "none",
         jsonEditor: false,
         defaultModelRendering: 'schema',
-        showRequestHeaders: false
+        showRequestHeaders: false,
+        showOperationIds: false
       });
 
       window.swaggerUi.load();
