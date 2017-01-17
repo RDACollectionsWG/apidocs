@@ -590,7 +590,7 @@
                         "required": false
                     },
                     {
-                        "name": "dateAdded",
+                        "name": "f_dateAdded",
                         "in": "query",
                         "description": "Filter response to the membered added on the requestd datetime.",
                         "type": "string",
