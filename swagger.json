@@ -1248,7 +1248,7 @@
                 },
                 "collectionPidProviderType": {
                     "type": "string",
-                    "description": "A controlled vocabulary term or URI that defines the PID provider service used by the Collection Service to create new PIDs for new Collections. Required if providesCollectionPids is true, otherwise this property is optional and has no meaning."
+                    "description": "Identifies the PID provider service used by the Collection Service to create new PIDs for new Collection. Required if providesCollectionPids is true, otherwise this property is optional and has no meaning. Recommended to use a Controlled Vocabulary or registered Data Types"
                 },
                 "enforcesAccess": {
                     "type": "boolean",
@@ -1283,18 +1283,11 @@
                     "type": "array",
                     "items": [
                         {
-                            "type": "string"
-                        },
-                        {
-                            "enum": [
-                                "findMatch",
-                                "intersection",
-                                "union",
-                                "flatten"
-                            ]
+                            "$ref": "#/definitions/CollectionOperations"
                         }
                     ],
-                    "description": "List of collection-level set operations that are supported by this service."
+                    "description": "List of collection-level set operations that are supported by this service.",
+                    "default": []
                 },
                 "supportedModelTypes": {
                     "type": "array",
@@ -1303,9 +1296,20 @@
                             "type": "string"
                         }
                     ],
-                    "description": "List of collection model types supported by this service.  Ideally uses a Controlled Vocabulary or registered Data Types"
+                    "description": "List of collection model types supported by this service.  Recommended to use a Controlled Vocabulary or registered Data Types",
+                    "default": []
                 }
             }
+        },
+        "CollectionOperations": {
+            "description": "Valid operation names.",
+            "type": "string",
+            "enum": [
+                "findMatch",
+                "intersection",
+                "union",
+                "flatten"
+            ]
         },
         "CollectionItemMappingMetadata": {
             "description": "metadata on an item which is available by mapping from capabilities",
