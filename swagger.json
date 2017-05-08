@@ -1118,6 +1118,10 @@
                     "type": "string",
                     "description": "Location at which the item data can be retrieved"
                 },
+                "description": {
+                    "type": "string",
+                    "description": "Human readable description"
+                },
                 "datatype": {
                     "type": "string",
                     "description": "URI of the data type of this item"
