@@ -911,12 +911,17 @@ definitions:
     description: Functional Properties of the Collection
     type: object
     required:
+      - dateCreated
       - ownership
       - license
       - modelType
       - hasAccessRestrictions
       - descriptionOntology
     properties:
+      dateCreated:
+        type: string
+        format: date-time
+        description: The date the collection was created.
       ownership:
         type: string
         description: >-

@@ -1139,6 +1139,7 @@
             "description": "Functional Properties of the Collection",
             "type": "object",
             "required": [
+                "dateCreated",
                 "ownership",
                 "license",
                 "modelType",
@@ -1146,6 +1147,11 @@
                 "descriptionOntology"
             ],
             "properties": {
+                "dateCreated": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "The date the collection was created."
+                },
                 "ownership": {
                     "type": "string",
                     "description": "Indicates the owner of the Collection. Implementation is expected to use a controlled vocabulary or PIDs."
