@@ -847,7 +847,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MemberItem'
+                oneOf:
+                  - type: string
+                  - type: string
+                    format: date-time
+                  - type: integer
         '401':
           description: Unauthorized. Request was not authorized.
           content:
@@ -920,7 +924,11 @@ paths:
           application/json:
             description: new property value
             schema:
-              type: string
+              oneOf:
+                - type: string
+                - type: string
+                  format: date-time
+                - type: integer
     delete:
       summary: Delete a named property of a member item in a collection
       description: >-

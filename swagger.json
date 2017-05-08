@@ -1169,7 +1169,18 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MemberItem"
+                    "oneOf" : [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                        {
+                            "type": "integer"
+                        }
+                    ]
                 }
               }
             }
@@ -1274,8 +1285,19 @@
             "application/json": {
               "description": "new property value",
               "schema": {
-                "type": "string"
-              }
+                    "oneOf" : [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                        {
+                            "type": "integer"
+                        }
+                    ]
+                }
             }
           }
         }
