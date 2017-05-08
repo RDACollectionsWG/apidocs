@@ -1132,3 +1132,8 @@ definitions:
         format: date-time
         description: >-
           The date the item was added to the collection.
+      dateUpdated:
+        type: string
+        format: date-time
+        description: >-
+          The date the item's metadata were last updated.
