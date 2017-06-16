@@ -136,6 +136,12 @@
                         "schema": {
                             "$ref": "#/definitions/Error"
                         }
+                    },
+                    "409": {
+                        "description": "Conflict. A collection with the same ID as the one posted already exists.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
                     }
                 }
             }
@@ -696,6 +702,12 @@
                     },
                     "404": {
                         "description": "Not found. The collection was not found for adding items.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict. A member item with the same ID as the one posted already exists.",
                         "schema": {
                             "$ref": "#/definitions/Error"
                         }

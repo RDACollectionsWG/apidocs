@@ -113,6 +113,11 @@ paths:
           description: Unauthorized. Request was not authorized.
           schema:
             $ref: '#/definitions/Error'
+        '409':
+          description: >-
+            Conflict. A collection with the same ID as the one posted already exists.
+          schema:
+            $ref: '#/defintions/Error'
   '/collections/{id}':
     get:
       summary: Get the properties of a specific collection.
@@ -564,6 +569,11 @@ paths:
           description: Not found. The collection was not found for adding items.
           schema:
             $ref: '#/definitions/Error'
+        '409':
+          description: >-
+            Conflict. A member item with the same ID as the one posted already exists.
+          schema:
+            $ref: '#/defintions/Error'
   '/collections/{id}/members/{mid}':
     get:
       summary: Get the properties of a member item in a collection
