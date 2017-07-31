@@ -68,6 +68,10 @@ paths:
           description: Filter response by the ownership property of the collection
           type: string
           collectionFormat: multi
+        - name: cursor
+          in: query
+          description: cursor for iterating a prior response to this query
+          type: string
       tags:
         - Collections
       responses:
