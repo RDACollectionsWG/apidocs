@@ -22,7 +22,9 @@ securityDefinitions:
 paths:
   /features:
     get:
-      summary: Gets the service-level features.
+      summary: >-
+        Gets the service-level features. A successful request returns an HTTP
+        200 response code with the ServiceFeatures object in the response body.
       description: >-
         This request returns the service-level features. Examples of
         service-level features might include whether or not the service supports
@@ -37,7 +39,10 @@ paths:
             $ref: '#/definitions/ServiceFeatures'
   /collections:
     get:
-      summary: Get a list of all collections
+      summary: >-
+        Get a list of all collections provided by this service. A successful
+        request returns an HTTP 200 response code with a CollectionResultSet
+        object in the response body.
       description: >-
         This request returns a list of the collections provided by this
         service.  This may be a complete list, or if the service features
@@ -84,11 +89,14 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     post:
-      summary: Create a new collection.
+      summary: >-
+        Create one or more new collections. Successful requests will return an
+        HTTP 201 response code with an array of the newly created
+        CollectionObject(s) in the response body.
       description: >-
-        This request adds a new collection to the collection store. The
-        Collection Object properties must be supplied in the  body of the
-        request. 
+        This request adds one or more new collections to the collection store.
+        The Collection Objects to be created  must be supplied in the body of
+        the request. 
       parameters:
         - name: content
           in: body
@@ -130,7 +138,10 @@ paths:
             $ref: '#/definitions/Error'
   '/collections/{id}':
     get:
-      summary: Get the properties of a specific collection.
+      summary: >-
+        Get the properties of a specific collection. A successful request
+        returns an HTTP 200 response code with the requested CollectionObject in
+        the response body.
       description: >-
         This request returns the Collection Object Properties for the collection
         identified by the provided id.
@@ -156,7 +167,10 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     put:
-      summary: Update the properties of a Collection Object
+      summary: >-
+        Update the properties of a Collection Object. A successful request
+        returns an HTTP 200 response code with the updated CollectionObject in
+        the response body.
       description: >-
         This request updates the properties of the collection identified by the
         provided id. The updated collection properties must be supplied in the
@@ -207,7 +221,9 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     delete:
-      summary: Delete a collection
+      summary: >-
+        Delete a collection. A successful request returns an HTTP 200 response
+        code with an  empty response body.
       description: >-
         This request deletes the collection idenified by the provided id from
         the collection store. The response may differ depending upon whether or
@@ -240,7 +256,10 @@ paths:
             $ref: '#/definitions/Error'
   '/collections/{id}/capabilities':
     get:
-      summary: Get the capabilities of this collection
+      summary: >-
+        Get the capabilities of this collection. A successful request returns an
+        HTTP 200 response code with a CollectionCapabilities object in the
+        response body.
       description: >-
         This request returns the capabilities metadata for the collection
         identified by the supplied id. The collection capabilities describe the
@@ -270,7 +289,8 @@ paths:
     post:
       summary: >-
         Find member objects in a collection which match the supplied member
-        object
+        object. A successful request returns an HTTP 200 response code with a
+        CollectionResultSet object in the response body.
       description: >-
         This request accepts as input the complete or partial properties of a
         member object and returns a ResultSet containing any objects which were
@@ -319,7 +339,10 @@ paths:
             $ref: '#/definitions/Error'
   '/collections/{id}/ops/intersection/{otherId}':
     get:
-      summary: Retrieve the members at the intersection of two collections
+      summary: >-
+        Retrieve the members at the intersection of two collections. A
+        successful request returns  an HTTP 200 response code with a
+        CollectionResultSet object in the response body.
       description: >-
         This request returns a resultset containing the members at the
         intersection of two collections. If the service features include support
@@ -366,7 +389,10 @@ paths:
             $ref: '#/definitions/Error'
   '/collections/{id}/ops/union/{otherId}':
     get:
-      summary: Retrieve the union of two collections
+      summary: >-
+        Retrieve the union of two collections. A successful request returns  an
+        HTTP 200 response code with a CollectionResultSet object in the response
+        body.
       description: >-
         This request returns a resultset containing the members at the union of
         two collections. If the service features include support for pagination,
@@ -413,7 +439,9 @@ paths:
             $ref: '#/definitions/Error'
   '/collections/{id}/ops/flatten':
     get:
-      summary: Flattens the collection
+      summary: >-
+        Flattens the collection. A successful request returns  an HTTP 200
+        response code with a MemberResultSet object in the response body.
       description: >-
         This request returns a resultset which is a flattened representation of
         a collection of collections into a single collection.
@@ -452,7 +480,9 @@ paths:
             $ref: '#/definitions/Error'
   '/collections/{id}/members':
     get:
-      summary: Get the members in a collection
+      summary: >-
+        Get the members in a collection. A successful request returns an HTTP
+        200 response code with a MemberResultSet object in the response body.
       description: >-
         This request returns the list of members contained in a collection. 
         This may be a complete list, or if the service features include support
@@ -529,7 +559,10 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     post:
-      summary: Add a new member item to this collection
+      summary: >-
+        Add one or more new member items to this collection. A successful
+        request returns an  HTTP 201 response code with an array of the new
+        added MemberItems in the response body.
       description: >-
         This request adds a new member item to a collection. If the service
         features include support for PID assignment to member items, then if no
@@ -590,7 +623,10 @@ paths:
             $ref: '#/definitions/Error'
   '/collections/{id}/members/{mid}':
     get:
-      summary: Get the properties of a member item in a collection
+      summary: >-
+        Get the properties of a member item in a collection. A successful
+        request returns an HTTP 200 response code with a MemberItem in the
+        response body.
       description: >-
         This request retrieves the properties of a specific member item from a
         collection
@@ -621,7 +657,10 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     put:
-      summary: Update the properties of a collection member item.
+      summary: >-
+        Update the properties of a collection member item. A successful request
+        returns an HTTP 200 response code with the updated MemberItem in the
+        response body.
       description: >-
         This request updates the properties of a collection member item.  The
         updated member  properties must be supplied in the body of the request.
@@ -679,7 +718,9 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     delete:
-      summary: Remove a collection member item.
+      summary: >-
+        Remove a collection member item. A successful request returns an HTTP
+        200 response code wiht an empty response body.
       description: >-
         Removes a member item from a collection. The response may differ
         depending upon whether or not the  service features include support for
@@ -725,7 +766,10 @@ paths:
             $ref: '#/definitions/Error'
   '/collections/{id}/members/{mid}/properties/{property}':
     get:
-      summary: Get a named property of a member item in a collection
+      summary: >-
+        Get a named property of a member item in a collection. A successful
+        request returns an HTTP 200 response code and the requested MemberItem
+        in teh response body.
       description: >-
         This request retrieves a specific named property of a specific member
         item from a collection
@@ -761,7 +805,10 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     put:
-      summary: Update a named property of a member item in a collection
+      summary: >-
+        Update a named property of a member item in a collection. A successful
+        request returns an HTTP 200 response code and the updated MemberItem in
+        the response body.
       description: >-
         This request updates a specific named property of a specific member item
         from a collection
@@ -813,7 +860,9 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     delete:
-      summary: Delete a named property of a member item in a collection
+      summary: >-
+        Delete a named property of a member item in a collection. A successful
+        request returns an HTTP 200 response code and empty response body.
       description: >-
         This request deletes a specific named property of a specific member item
         from a collection
