@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "title": "RDA Collections API",
-    "description": "API Strawman for RDA Research Data Collections WG",
+    "description": "The RDA Collections API Recommendation is a unified model and interface specification for CRUD operations on data collections, with particular observance of persistent identification and typing aspects. The recommendation allows building collections within diverse domains and then sharing or expanding them across disciplines.",
     "version": "1.0.0"
   },
   "host": "api.example.org",
