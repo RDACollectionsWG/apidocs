@@ -6,7 +6,9 @@ info:
     specification for CRUD operations on data collections, with particular 
     observance of persistent identification and typing aspects. The 
     recommendation allows building collections within diverse domains and 
-    then sharing or expanding them across disciplines
+    then sharing or expanding them across disciplines. This recommendation has 
+    first been released in September 2017 for the 10th RDA Plenary in Montreal,
+    Canada.
   version: 1.0.0
 host: api.example.org
 schemes:
